@@ -1,0 +1,19 @@
+{
+    "instruments": {
+        "vna0": {
+            "type": "vna",
+            "track_frequency": true,
+            "track_span": true,
+            "use_markers": false,
+            "bandwidth_factor": 4.0,
+            "segments":[
+                {"name": "TM010", "f0": 2.5007E+09, "span": 9.618E+05, "points": 31, "ifbw": 1e3, "power": 0.0},
+                {"name": "TM011","f0": 4.5386E+09, "span": 2.017E+06, "points": 31, "ifbw": 1e3, "power": 0.0},
+                {"name": "TM020","f0": 5.7286E+09, "span": 1.697E+06, "points": 31, "ifbw": 1e3, "power": 0.0},
+                {"name": "TM021","f0": 6.8642E+09, "span": 3.051E+06, "points": 31, "ifbw": 1e3, "power": 0.0},
+                {"name": "TM012","f0": 7.9679E+09, "span": 2.871E+06, "points": 31, "ifbw": 1e3, "power": 0.0},
+                {"name": "TM022","f0": 9.4744E+09, "span": 3.989E+06, "points": 31, "ifbw": 1e3, "power": 0.0}
+            ]
+        }
+    }
+}
