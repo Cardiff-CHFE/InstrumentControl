@@ -16,7 +16,7 @@ class VNA(Instrument):
     @staticmethod
     def match_device(devname):
         model = devname.split(",")[1].strip()
-        return model == "E5071C" or model == "E5071B"
+        return model == "E5071C" or model == "E5071B" or model == "N5232A"
 
     def setup(self, config):
         self.cfg = VNAConfig(config)
@@ -119,7 +119,10 @@ class VNA(Instrument):
         data = [5, 1, 1, 1, 0, 0, len(segments)]
         for s in segments:
             data += [s.f0, s.span, s.points, s.ifbw, s.power]
-        self.res.write_ascii_values(":SENS{}:SEGM:DATA", data, channel)
+        if model == "N5232A":
+
+        else:
+            self.res.write_ascii_values(":SENS{}:SEGM:DATA", data, channel)
 
     def setup_marker(self, freq, marker=1, channel=1):
         self.res.write(":CALC{}:MARK{} {}", channel, marker, onoff(True))
@@ -132,10 +135,16 @@ class VNA(Instrument):
         return self.res.query_ascii_values(":CALC{}:MARK{}:BWID:DATA?", channel, marker)
 
     def get_sweep_data(self, channel=1):
-        return self.res.query_ascii_values(":CALC{}:DATA:SDAT?", channel)
+        if model == "N5232A":
+
+        else:
+            return self.res.query_ascii_values(":CALC{}:DATA:SDAT?", channel)
 
     def get_freq_data(self, channel=1):
-        return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
+        if model == "N5232A":
+
+        else:
+            return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
 
 
 class VNAConfig(object):
