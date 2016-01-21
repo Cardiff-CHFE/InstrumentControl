@@ -120,7 +120,7 @@ class VNA(Instrument):
         for s in segments:
             data += [s.f0, s.span, s.points, s.ifbw, s.power]
         if model == "N5232A":
-
+            pass
         else:
             self.res.write_ascii_values(":SENS{}:SEGM:DATA", data, channel)
 
