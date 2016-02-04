@@ -5,9 +5,11 @@ import os
 from PyQt4 import QtGui, QtCore
 
 import vna
+import dc_power
 from backend import Backend
 
 from vna_window import VNAWidget
+from dc_power_window import DCWidget
 
 class ApplicationWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -15,7 +17,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.setWindowTitle("Instrument Control")
 
         self.inst_widgets = {
-            "vna": VNAWidget
+            "vna": VNAWidget,
+            "dc": DCWidget
         }
 
         self.backend = Backend()
@@ -28,7 +31,8 @@ class ApplicationWindow(QtGui.QMainWindow):
 
     def _load_instrument_drivers(self):
         self.backend.instrument_drivers = {
-            "vna": vna.VNA
+            "vna": vna.VNA,
+            "dc": dc_power.DcPower
         }
 
     def _create_controls(self):

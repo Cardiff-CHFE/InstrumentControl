@@ -136,13 +136,13 @@ class VNA(Instrument):
 
     def get_sweep_data(self, channel=1):
         if model == "N5232A":
-
+            pass
         else:
             return self.res.query_ascii_values(":CALC{}:DATA:SDAT?", channel)
 
     def get_freq_data(self, channel=1):
         if model == "N5232A":
-
+            pass
         else:
             return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
 
