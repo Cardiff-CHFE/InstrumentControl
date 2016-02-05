@@ -32,7 +32,7 @@ class ApplicationWindow(QtGui.QMainWindow):
     def _load_instrument_drivers(self):
         self.backend.instrument_drivers = {
             "vna": vna.VNA,
-            "dc": dc_power.DcPower
+            "dc": dc_power.DCPower
         }
 
     def _create_controls(self):
