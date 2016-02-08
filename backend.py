@@ -41,7 +41,7 @@ class Backend(object):
     def load_instruments(self):
         rm = visa.ResourceManager()
         names = scpi.get_resource_names(rm)
-
+        
         for name, inst in self.config["instruments"].items():
             driver_cls = self.instrument_drivers[inst["type"]]
             ident = None

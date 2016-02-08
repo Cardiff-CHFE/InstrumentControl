@@ -15,3 +15,12 @@ class DCWidget(QtGui.QWidget):
 
     def _layout_controls(self):
         pass
+
+    def configure(self, config):
+        pass
+
+    def add_sample(self, time, sample):
+        pass
+
+    def refresh(self):
+        pass

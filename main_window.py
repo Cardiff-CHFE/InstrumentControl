@@ -166,7 +166,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.backend.start_logging(self.sample_text.text())
         else:
             self.backend.stop_logging()
-            if self.backend.config["samples"]:
+            if "samples" in self.backend.config:
                 if self.sample_number.value() < self.sample_number.maximum():
                     self.sample_number.setValue(self.sample_number.value()+1)
                 else:

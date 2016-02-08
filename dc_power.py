@@ -25,8 +25,11 @@ class DCPower(Instrument):
         self.output = False
 
     def sample(self, elapsed):
-        cmd = self.cfg.commands.popleft()
-        cmd.run(self)
+        if len(self.cfg.commands):
+            cmd = self.cfg.commands.popleft()
+            cmd.run(self)
+        else:
+            time.sleep(1.0)
         return [self.voltages, self.currents, self.output]
 
     def cleanup(self):
@@ -36,8 +39,8 @@ class DCPower(Instrument):
 
     def get_headers(self):
         """Override this to return a list of logfile headers"""
-        headers = ["Voltage {} (V)".format(n) for n in range self.cfg.channels]
-        headers += ["Current {} (A)".format(n) for n in range self.cfg.channels]
+        headers = ["Voltage {} (V)".format(n) for n in range(self.cfg.channels)]
+        headers += ["Current {} (A)".format(n) for n in range(self.cfg.channels)]
         headers += ["State"]
         return headers
 
@@ -59,7 +62,7 @@ class DCPower(Instrument):
         self.currents[self.channel-1] = current
 
     def set_output(self, state):
-        self.res.write(":OUTP:STAT {}", onoff(state))
+        self.res.write(":OUTP {}", onoff(state))
         self.output = state
 
 
@@ -114,4 +117,4 @@ class WaitCommand(object):
         self.duration = duration
 
     def run(self, inst):
-        time.sleep(duration)
+        time.sleep(self.duration)
