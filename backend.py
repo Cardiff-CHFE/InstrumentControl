@@ -4,6 +4,7 @@ import visa
 import time
 import csv
 import os
+import os.path
 
 
 class InstrumentException(Exception):
@@ -17,19 +18,22 @@ class Backend(object):
         self.data_logger = DataLogger()
         self.logging = False
 
-    def load_configfile(self, path):
-        self.path = path
+    def load_configfile(self, cfile):
+        self.datadir = os.path.dirname(cfile)
+        self.configfile = cfile
         try:
-            with open(os.path.join(path, "config.json")) as fp:
+            with open(cfile) as fp:
                 self.load_config(fp)
         except FileNotFoundError:
             pass
         if not "instruments" in self.config:
             self.config["instruments"] = {}
-
+        if "datadir" in self.config:
+            # Update data dir relative to config file (unless abs path used)
+            self.datadir = os.path.normpath(os.path.join(self.datadir, self.config["datadir"]))
 
     def save_configfile(self):
-        with open(os.path.join(self.path, "config.json", 'w')) as fp:
+        with open(self.configfile, 'w') as fp:
             self.save_config(fp)
 
     def load_config(self, fp):
@@ -41,7 +45,7 @@ class Backend(object):
     def load_instruments(self):
         rm = visa.ResourceManager()
         names = scpi.get_resource_names(rm)
-        
+
         for name, inst in self.config["instruments"].items():
             driver_cls = self.instrument_drivers[inst["type"]]
             ident = None
@@ -73,7 +77,7 @@ class Backend(object):
 
     def start_logging(self, sample_name):
         self.data_logger.open_files(self.instruments.keys(),
-                                    os.path.join(self.path, sample_name))
+                                    os.path.join(self.datadir, sample_name))
         for name, inst in self.instruments.items():
             self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
         self.logging = True

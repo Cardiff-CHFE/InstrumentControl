@@ -63,7 +63,7 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
-        openAction = QtGui.QAction('&Open folder', self)
+        openAction = QtGui.QAction('&Open config', self)
         openAction.setShortcut('Ctrl+O')
         openAction.triggered.connect(self.open_folder)
         saveAction = QtGui.QAction('&Save config', self)
@@ -111,8 +111,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.resize(900,500)
 
     def open_folder(self):
-        folder = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Directory"))
-        self.backend.load_configfile(folder)
+        cfgfile = str(QtGui.QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)"))
+        self.backend.load_configfile(cfgfile)
         self.update_gui()
         self.sample_idx = 13
 
