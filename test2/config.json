@@ -1,0 +1,20 @@
+{
+    "instruments": {
+        "dc0": {
+            "type": "dc",
+            "channels": 1,
+            "commands": [
+                {"cmd": "voltage", "voltage": 3.3, "channel": 1},
+                {"cmd": "wait", "duration": 1.0},
+                {"cmd": "output", "state": true},
+                {"cmd": "wait", "duration": 2.0},
+                {"cmd": "output", "state": false},
+                {"cmd": "wait", "duration": 2.0},
+                {"cmd": "output", "state": true},
+                {"cmd": "wait", "duration": 2.0},
+                {"cmd": "output", "state": false},
+                {"cmd": "wait", "duration": 2.0}
+            ]
+        }
+    }
+}
