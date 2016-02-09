@@ -40,10 +40,16 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         self.add_inst_btn = QtGui.QPushButton("Add")
         self.add_inst_btn.clicked.connect(self.add_inst_btn_clicked)
+        #TODO remove once implemented
+        self.add_inst_btn.setEnabled(False)
         self.cfg_inst_btn = QtGui.QPushButton("Configure")
         self.cfg_inst_btn.clicked.connect(self.cfg_inst_btn_clicked)
+        #TODO remove once implemented
+        self.cfg_inst_btn.setEnabled(False)
         self.del_inst_btn = QtGui.QPushButton("Delete")
         self.del_inst_btn.clicked.connect(self.del_inst_btn_clicked)
+        #TODO remove once implemented
+        self.del_inst_btn.setEnabled(False)
 
         self.run_btn = QtGui.QPushButton("Run experiment")
         self.run_btn.setCheckable(True)
@@ -69,6 +75,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         saveAction = QtGui.QAction('&Save config', self)
         saveAction.setShortcut('Ctrl+S')
         saveAction.triggered.connect(self.save_folder)
+        #TODO remove to enable saving
+        saveAction.setEnabled(False)
         closeAction = QtGui.QAction('Close', self)
         closeAction.setShortcut('Ctrl+Q')
         closeAction.triggered.connect(self.close)
