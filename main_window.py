@@ -8,31 +8,36 @@ import vna
 import dc_power
 from backend import Backend
 
-from vna_window import VNAWidget
-from dc_power_window import DCWidget
+from vna_window import VNAWidget, VNAConfig
+from dc_power_window import DCWidget, DCConfig
 
 class ApplicationWindow(QtGui.QMainWindow):
     def __init__(self):
         super(ApplicationWindow, self).__init__()
         self.setWindowTitle("Instrument Control")
 
+        self.backend = Backend()
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.timer_timeout)
+
+        self._load_instruments()
+        self._create_controls()
+        self._layout_controls()
+
+    def _load_instruments(self):
+        self.backend.instrument_drivers = {
+            "vna": vna.VNA,
+            "dc": dc_power.DCPower
+        }
+
         self.inst_widgets = {
             "vna": VNAWidget,
             "dc": DCWidget
         }
 
-        self.backend = Backend()
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.timer_timeout)
-
-        self._load_instrument_drivers()
-        self._create_controls()
-        self._layout_controls()
-
-    def _load_instrument_drivers(self):
-        self.backend.instrument_drivers = {
-            "vna": vna.VNA,
-            "dc": dc_power.DCPower
+        self.inst_configs = {
+            "vna": VNAConfig,
+            "dc": DCConfig
         }
 
     def _create_controls(self):
@@ -44,12 +49,9 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.add_inst_btn.setEnabled(False)
         self.cfg_inst_btn = QtGui.QPushButton("Configure")
         self.cfg_inst_btn.clicked.connect(self.cfg_inst_btn_clicked)
-        #TODO remove once implemented
         self.cfg_inst_btn.setEnabled(False)
         self.del_inst_btn = QtGui.QPushButton("Delete")
         self.del_inst_btn.clicked.connect(self.del_inst_btn_clicked)
-        #TODO remove once implemented
-        self.del_inst_btn.setEnabled(False)
 
         self.run_btn = QtGui.QPushButton("Run experiment")
         self.run_btn.setCheckable(True)
@@ -131,7 +133,11 @@ class ApplicationWindow(QtGui.QMainWindow):
         pass
 
     def cfg_inst_btn_clicked(self):
-        pass
+        item = self.instrument_list.currentItem()
+        if item is not None:
+            cfg = self.backend.config["instruments"][item.text()]
+            cfgwnd = ConfigWindow(cfg, self.inst_configs[cfg["type"]])
+            cfgwnd.exec_()
 
     def del_inst_btn_clicked(self):
         row = self.instrument_list.currentRow()
@@ -236,6 +242,22 @@ class DebugWidget(QtGui.QWidget):
         cmd = self.input_cmd.currentText()
         self.input_cmd.setEditText("")
         self.run_cmd(cmd)
+
+class ConfigWindow(QtGui.QDialog):
+    def __init__(self, config, cfgwidget):
+        super(ConfigWindow, self).__init__()
+        self.setWindowTitle("Instrument Config")
+        self.config = config
+        self.cfgwidget = cfgwidget
+
+        self._create_controls()
+        self._layout_controls()
+
+    def _create_controls(self):
+        pass
+
+    def _layout_controls(self):
+        pass
 
 if __name__ == "__main__":
     qApp = QtGui.QApplication(sys.argv)

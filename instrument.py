@@ -94,3 +94,25 @@ class Instrument(object):
             except queue.Empty:
                 break
         return results
+
+class DataWindow(object):
+    def configure(self, config):
+        """Override this to configure the window"""
+        pass
+
+    def add_sample(self, time, sample):
+        """Override this to add a sample to the window"""
+        pass
+
+    def refresh(self):
+        """Override this to refresh the window (e.g. update graphs)"""
+        pass
+
+class ConfigWindow(object):
+    def load_config(self, config):
+        """Override this to update the window with the provided configuration"""
+        pass
+        
+    def get_config(self):
+        """Override this to return the current configuration"""
+        pass

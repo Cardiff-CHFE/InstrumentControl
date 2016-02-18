@@ -4,8 +4,9 @@ from collections import deque
 import pyqtgraph as pg
 import numpy as np
 from vna import lorentz_fn
+from instrument import DataWindow, ConfigWindow
 
-class VNAWidget(QtGui.QWidget):
+class VNAWidget(QtGui.QWidget, DataWindow):
     def __init__(self):
         super().__init__()
         self._create_controls()
@@ -132,3 +133,15 @@ class VNAWidget(QtGui.QWidget):
             # span = np.linspace(minf,maxf,100)
             # ampl = 20*np.log10(lorentz_fn(span,f0,f0/q,10**(il/20)))
             # self.track_plotdata_calc.setData(span,ampl)
+
+class VNAConfig(QtGui.QWidget, ConfigWindow):
+    def __init__(self):
+        super().__init__()
+        self._create_controls()
+        self._layout_controls()
+
+    def _create_controls(self):
+        pass
+
+    def _layout_controls(self):
+        pass
