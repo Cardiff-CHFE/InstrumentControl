@@ -1,6 +1,7 @@
 from instrument import Instrument
 import scpi
 from scpi import onoff
+from pyvisa.errors import VisaIOError
 import math
 import numpy as np
 from scipy.optimize import curve_fit
@@ -20,6 +21,7 @@ class VNA(Instrument):
 
     def setup(self, config):
         self.cfg = VNAConfig(config)
+        self.model = "E5071C" #TODO: Detect instead of hardcode
 
         self.res.reset()
         self.res.write(":CALC1:PAR1:DEF {}", "S21")
@@ -31,11 +33,15 @@ class VNA(Instrument):
         self.res.write(":SENS1:SWE:GEN {}", "STEP")
 
         self.set_segments(self.cfg.segments)
-        time.sleep(0.5)
+        time.sleep(1.0)
         self.res.write(":DISP:WIND1:TRAC1:Y:AUTO")
         if self.cfg.use_markers:
-            for idx, segment in enumerate(self.cfg.segments, 1):
-                self.setup_marker(segment.f0, idx)
+            self.res.write(":CALC1:MARK:BWID {}", onoff(True))
+            self.res.write(":CALC1:MARK:FUNC:MULT:TYPE {}", "PEAK")
+            self.res.write(":CALC1:MARK:FUNC:EXEC")
+            self.res.write(":CALC1:MARK:FUNC:MULT:TRAC {}", onoff(True))
+            #for idx, segment in enumerate(self.cfg.segments, 1):
+            #    self.setup_marker(segment.f0, idx)
         else:
             #self.res.write(":CALC1:MARK:FUNC:MULT:TYPE {}", "PEAK")
             #self.res.write(":CALC1:MARK:FUNC:EXEC")
@@ -52,11 +58,15 @@ class VNA(Instrument):
 
         data = Sample()
         if self.cfg.use_markers:
-            for i in range(len(self.cfg.segments)):
-                bw, f0, q, pmax = self.get_marker_data(i+1)
-                data.bw.append(bw)
-                data.f0.append(f0)
-                data.q.append(q)
+            try:
+                for i in range(len(self.cfg.segments)):
+                    bw, f0, q, il = self.get_marker_data(i+1)
+                    data.bw.append(bw)
+                    data.f0.append(f0)
+                    data.q.append(q)
+                    data.il.append(il)
+            except VisaIOError:
+                return None
 
             arr = [data.bw,data.f0,data.q]
             if self.last_sample:
@@ -119,7 +129,7 @@ class VNA(Instrument):
         data = [5, 1, 1, 1, 0, 0, len(segments)]
         for s in segments:
             data += [s.f0, s.span, s.points, s.ifbw, s.power]
-        if model == "N5232A":
+        if self.model == "N5232A":
             pass
         else:
             self.res.write_ascii_values(":SENS{}:SEGM:DATA", data, channel)
@@ -129,19 +139,19 @@ class VNA(Instrument):
         self.res.write(":CALC{}:MARK{}:X {}", channel, marker, freq)
         self.res.write(":CALC{}:MARK{}:FUNC:TYPE {}", channel, marker, "PEAK")
         self.res.write(":CALC{}:MARK{}:FUNC:TRAC {}", channel, marker, onoff(True))
-        self.res.write(":CALC{}:MARK:BWID {}", channel, marker, onoff(True))
+        self.res.write(":CALC{}:MARK:BWID {}", channel, onoff(True))
 
     def get_marker_data(self, marker=1, channel=1):
         return self.res.query_ascii_values(":CALC{}:MARK{}:BWID:DATA?", channel, marker)
 
     def get_sweep_data(self, channel=1):
-        if model == "N5232A":
+        if self.model == "N5232A":
             pass
         else:
             return self.res.query_ascii_values(":CALC{}:DATA:SDAT?", channel)
 
     def get_freq_data(self, channel=1):
-        if model == "N5232A":
+        if self.model == "N5232A":
             pass
         else:
             return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
