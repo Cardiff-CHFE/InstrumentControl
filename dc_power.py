@@ -19,9 +19,9 @@ class DCPower(Instrument):
 
     def setup(self, config):
         self.cfg = DCConfig(config)
-        self.channel = 1
-        self.voltages = [0]*self.cfg.channels
-        self.currents = [0]*self.cfg.channels
+        self.channel = None
+        self.voltages = [0]*len(self.cfg.channels)
+        self.currents = [0]*len(self.cfg.channels)
         self.output = False
 
     def sample(self, elapsed):
@@ -39,8 +39,8 @@ class DCPower(Instrument):
 
     def get_headers(self):
         """Override this to return a list of logfile headers"""
-        headers = ["Voltage {} (V)".format(n) for n in range(self.cfg.channels)]
-        headers += ["Current {} (A)".format(n) for n in range(self.cfg.channels)]
+        headers = ["Voltage {} (V)".format(n) for n in self.cfg.channels]
+        headers += ["Current {} (A)".format(n) for n in self.cfg.channels]
         headers += ["State"]
         return headers
 
@@ -50,16 +50,16 @@ class DCPower(Instrument):
 
     def set_channel(self, channel):
         if self.channel != channel:
-            self.res.write(":INST:NSEL {}", channel)
+            self.res.write(":INST:SEL {}", self.cfg.channels[channel])
             self.channel = channel
 
     def set_voltage(self, voltage):
         self.res.write(":SOUR:VOLT {}", voltage)
-        self.voltages[self.channel-1] = voltage
+        self.voltages[self.channel] = voltage
 
     def set_current(self, current):
         self.res.write(":SOUR:CURR {}", current)
-        self.currents[self.channel-1] = current
+        self.currents[self.channel] = current
 
     def set_output(self, state):
         self.res.write(":OUTP {}", onoff(state))
@@ -96,14 +96,14 @@ class SetVoltageCommand(object):
         inst.set_voltage(self.voltage)
 
 class SetCurrentCommand(object):
-    def __init__(self, voltage, channel=None):
-        self.voltage = voltage
+    def __init__(self, current, channel=None):
+        self.current = current
         self.channel = channel
 
     def run(self, inst):
         if self.channel is not None:
             inst.set_channel(self.channel)
-        inst.set_current(self.voltage)
+        inst.set_current(self.current)
 
 class SetOutputCommand(object):
     def __init__(self, state):
