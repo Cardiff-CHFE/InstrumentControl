@@ -160,9 +160,10 @@ class VNA(Instrument):
 class VNAConfig(object):
     def __init__(self, config):
         self.segments = []
-        for s in config["segments"]:
+        for n, s in config["segments"].items():
             self.segments.append(Segment(s["f0"], s["span"], s["points"],
                                          s["ifbw"], s["power"]))
+        self.segments.sort(key=lambda seg: seg.f0)
         self.track_freq = config["track_frequency"]
         self.track_span = config["track_span"]
         self.use_markers = config["use_markers"]
