@@ -67,6 +67,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.sample_number.setEnabled(False)
         self.sample_number.valueChanged.connect(self.sample_number_changed)
 
+        self.auto_increment = QtGui.QCheckBox("Auto increment")
+
         self.tabs = QtGui.QTabWidget()
 
         menubar = self.menuBar()
@@ -106,6 +108,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         vbox.addWidget(hline)
         vbox.addWidget(QtGui.QLabel("Sample number"))
         vbox.addWidget(self.sample_number)
+        vbox.addWidget(self.auto_increment)
         vbox.addWidget(QtGui.QLabel("Sample name"))
         vbox.addWidget(self.sample_text)
         vbox.addWidget(self.record_btn)
@@ -180,7 +183,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.backend.start_logging(self.sample_text.text())
         else:
             self.backend.stop_logging()
-            if "samples" in self.backend.config:
+            if self.auto_increment.isChecked() and "samples" in self.backend.config:
                 if self.sample_number.value() < self.sample_number.maximum():
                     self.sample_number.setValue(self.sample_number.value()+1)
                 else:
