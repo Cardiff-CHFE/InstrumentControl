@@ -116,9 +116,9 @@ class VNA(Instrument):
         pass
 
     def get_headers(self):
-        h = ["Frequency {}/Hz".format(n) for n in range(len(self.cfg.segments))]
-        h += ["Q factor {}/Hz".format(n) for n in range(len(self.cfg.segments))]
-        h += ["Insertion loss {}/dB".format(n) for n in range(len(self.cfg.segments))]
+        h = ["Frequency {}/Hz".format(s.name) for s in self.cfg.segments]
+        h += ["Q factor {}/Hz".format(s.name) for s in self.cfg.segments]
+        h += ["Insertion loss {}/dB".format(s.name) for s in self.cfg.segments]
         return h
 
     def format_sample(self, data):
@@ -161,7 +161,7 @@ class VNAConfig(object):
     def __init__(self, config):
         self.segments = []
         for n, s in config["segments"].items():
-            self.segments.append(Segment(s["f0"], s["span"], s["points"],
+            self.segments.append(Segment(n, s["f0"], s["span"], s["points"],
                                          s["ifbw"], s["power"]))
         self.segments.sort(key=lambda seg: seg.f0)
         self.track_freq = config["track_frequency"]
@@ -171,7 +171,8 @@ class VNAConfig(object):
 
 
 class Segment(object):
-    def __init__(self, f0=2.495e9, span=50e6, points=51, ifbw=1000, power=0):
+    def __init__(self, name, f0=2.495e9, span=50e6, points=51, ifbw=1000, power=0):
+        self.name = name
         self.f0 = f0
         self.span = span
         self.points = points

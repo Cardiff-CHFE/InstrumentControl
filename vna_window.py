@@ -89,7 +89,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.set_channel_count(len(config["segments"]))
         self.freq_list.clear()
         self.qfac_list.clear()
-        self.seg_headings = [seg["name"] for seg in config["segments"]]
+        self.seg_headings = [name for name, val in config["segments"].items()]
         self.freq_list.addItems(["{}: 0.0GHz".format(h) for h in self.seg_headings])
         self.qfac_list.addItems(["{}: 0.0".format(h) for h in self.seg_headings])
 
