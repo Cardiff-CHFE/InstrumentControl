@@ -21,13 +21,23 @@ class VNA(Instrument):
 
     def setup(self, config):
         self.cfg = VNAConfig(config)
-        self.model = "E5071C" #TODO: Detect instead of hardcode
 
         self.res.reset()
+        
+        devname = self.res.query("*IDN?")
+        self.model = devname.split(",")[1].strip()
+        
+        #TODO: Markers not yet supported on 
+        if self.model == "N5232A":
+            self.cfg.use_markers = False
+        
         self.res.write(":CALC1:PAR1:DEF {}", "S21")
         self.res.write(":INIT1:CONT {}", onoff(True))
         if not self.cfg.use_markers:
-            self.res.write(":TRIG:SOUR BUS")
+            if self.model == "N5232A":
+                self.res.write(":TRIG:SOUR MAN")
+            else:
+                self.res.write(":TRIG:SOUR BUS")
         self.res.write(":SENS1:SWE:TYPE {}", "SEGM")
         self.res.write(":SENS1:SWE:DELAY {}", 0.001)
         self.res.write(":SENS1:SWE:GEN {}", "STEP")
@@ -53,7 +63,10 @@ class VNA(Instrument):
 
     def sample(self, elapsed):
         if not self.cfg.use_markers:
-            self.res.write(":TRIG:SING")
+            if self.model == "N5232A":
+                self.res.write(":INIT:IMM")
+            else:
+                self.res.write(":TRIG:SING")
             self.res.query("*OPC?")
 
         data = Sample()
@@ -124,14 +137,20 @@ class VNA(Instrument):
     def format_sample(self, data):
         return data.f0 + data.q + data.il
 
-    def set_segments(self, segments, channel=1):
-        #[<buf>,<stim>,<ifbw>,<pow>,<del>,<time>,<segm>]
-        data = [5, 1, 1, 1, 0, 0, len(segments)]
-        for s in segments:
-            data += [s.f0, s.span, s.points, s.ifbw, s.power]
+    def set_segments(self, segments, channel=1):        
         if self.model == "N5232A":
-            pass
+            data = ["SSTOP", len(segments)]
+            for s in segments:
+                data += [1, s.points, s.f0, s.span, s.ifbw, 0, s.power]
+            
+            self.res.write(":SENS{}:SEGM:BWID:CONT {}", channel, onoff(True))
+            self.res.write(":SENS{}:SEGM:POW:CONT {}", channel, onoff(True))
+            self.res.write_ascii_values(":SENS{}:SEGM:LIST", data, channel)
         else:
+            #[<buf>,<stim>,<ifbw>,<pow>,<del>,<time>,<segm>]
+            data = [5, 1, 1, 1, 0, 0, len(segments)]
+            for s in segments:
+                data += [s.f0, s.span, s.points, s.ifbw, s.power]
             self.res.write_ascii_values(":SENS{}:SEGM:DATA", data, channel)
 
     def setup_marker(self, freq, marker=1, channel=1):
@@ -146,13 +165,13 @@ class VNA(Instrument):
 
     def get_sweep_data(self, channel=1):
         if self.model == "N5232A":
-            pass
+            return self.res.query_ascii_values(":CALC{}:DATA? SDAT", channel)
         else:
             return self.res.query_ascii_values(":CALC{}:DATA:SDAT?", channel)
 
     def get_freq_data(self, channel=1):
         if self.model == "N5232A":
-            pass
+            return self.res.query_ascii_values(":CALC{}:X?", channel)
         else:
             return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
 
