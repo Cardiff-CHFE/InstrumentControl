@@ -1,0 +1,180 @@
+{
+    "datadir": "Magnetic",
+    "instruments": {
+        "vna0": {
+            "type": "vna",
+            "track_frequency": true,
+            "track_span": true,
+            "use_markers": false,
+            "bandwidth_factor": 4.0,
+            "segments":{
+                "TM110": {"f0": 3.786E+09, "span": 50E+06, "points": 201, "ifbw": 10e3, "power": 0.0, "gnmp": 0.388, "nz": 0.5},
+                "TE011": {"f0": 5.372E+09, "span": 50E+06, "points": 201, "ifbw": 10e3, "power": 0.0, "gnmp": 0.285}
+            },
+            "cavity": "Saruman",
+            "cavity_volume": 283528.737,
+            "sample_volume": 125.6637
+        }
+    },
+    "samples": [
+        "Empty Cavity", "Empty Tube1", "Empty Tube2", "Empty Tube3", 
+        "Empty Tube4", "Empty Tube5", "Empty Tube6", "Empty Tube7", "Empty Tube8", 
+        "Fe", "Fe-AC", "Fe-MC", "F-FeA-2",
+        "F-FeA-5", "F-FeA-10", "F-FeA-20", "F-FeB-5", "F-FeB-50", "F-FeNiA-1-5", "F-FeNiA-5-1",
+        "F-FeNiA-5-5", "F-NiA-5", "F-NiA-10", "MC", "S-FeA-2", "S-FeA-5",
+        "S-FeA-10", "SiC Fresh", "SiO2 gel", "SiO2 meso"
+    ],
+    "calculations": {
+        "modes": ["vna0:TM110", "vna0:TE011", "vna0:TE021", "vna0:TE012", "vna0:TE022"],
+        "modetypes": ["Magnetic", "Magnetic", "Magnetic", "Magnetic", "Magnetic"],
+        "samples": [
+            {
+                "name": "Fe",
+                "sample": ["Fe"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "Fe-AC",
+                "sample": ["Fe-AC"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "Fe-MC",
+                "sample": ["Fe-MC"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeA-2",
+                "sample": ["F-FeA-2"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeA-5",
+                "sample": ["F-FeA-5"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeA-10",
+                "sample": ["F-FeA-10"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeA-20",
+                "sample": ["F-FeA-20"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeB-5",
+                "sample": ["F-FeB-5"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeB-50",
+                "sample": ["F-FeB-50"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeNiA-1-5",
+                "sample": ["F-FeNiA-1-5"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeNiA-5-1",
+                "sample": ["F-FeNiA-5-1"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-FeNiA-5-5",
+                "sample": ["F-FeNiA-5-5"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-NiA-5",
+                "sample": ["F-NiA-5"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "F-NiA-10",
+                "sample": ["F-NiA-10"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "MC",
+                "sample": ["MC"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "S-FeA-2",
+                "sample": ["S-FeA-2"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "S-FeA-5",
+                "sample": ["S-FeA-5"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "S-FeA-10",
+                "sample": ["S-FeA-10"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "SiC Fresh",
+                "sample": ["SiC Fresh"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "SiO2 gel",
+                "sample": ["SiO2 gel"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            },
+            {
+                "name": "SiO2 meso",
+                "sample": ["SiO2 meso"],
+                "reference": ["Empty Tube1", "Empty Tube2", "Empty Tube3",
+                              "Empty Tube4", "Empty Tube5", "Empty Tube6",
+                              "Empty Tube7", "Empty Tube8"]
+            }
+        ]
+    }
+}

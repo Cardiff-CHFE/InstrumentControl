@@ -1,6 +1,7 @@
 import sys
 import traceback
 import os
+import copy
 
 from PyQt4 import QtGui, QtCore
 
@@ -25,16 +26,18 @@ class ApplicationWindow(QtGui.QMainWindow):
         self._layout_controls()
 
     def _load_instruments(self):
+        # Instrument drivers only control the instruments (no GUI)
         self.backend.instrument_drivers = {
             "vna": vna.VNA,
             "dc": dc_power.DCPower
         }
-
+        # Instrument widgets provide GUI feedback on the instrument state
         self.inst_widgets = {
             "vna": VNAWidget,
             "dc": DCWidget
         }
 
+        # Instrument configurations are GUIs for changing instrument settings
         self.inst_configs = {
             "vna": VNAConfig,
             "dc": DCConfig
@@ -46,10 +49,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.add_inst_btn = QtGui.QPushButton("Add")
         self.add_inst_btn.clicked.connect(self.add_inst_btn_clicked)
         #TODO remove once implemented
-        self.add_inst_btn.setEnabled(False)
+        #self.add_inst_btn.setEnabled(False)
         self.cfg_inst_btn = QtGui.QPushButton("Configure")
         self.cfg_inst_btn.clicked.connect(self.cfg_inst_btn_clicked)
-        self.cfg_inst_btn.setEnabled(False)
+        #self.cfg_inst_btn.setEnabled(False)
         self.del_inst_btn = QtGui.QPushButton("Delete")
         self.del_inst_btn.clicked.connect(self.del_inst_btn_clicked)
 
@@ -66,6 +69,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.sample_number.setMinimum(1)
         self.sample_number.setEnabled(False)
         self.sample_number.valueChanged.connect(self.sample_number_changed)
+        
+        self.edit_samples = QtGui.QPushButton("Edit samples")
+        self.edit_samples.setEnabled(False)
+        self.edit_samples.clicked.connect(self.edit_samples_btn_clicked)
 
         self.auto_increment = QtGui.QCheckBox("Auto increment")
 
@@ -80,7 +87,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         saveAction.setShortcut('Ctrl+S')
         saveAction.triggered.connect(self.save_folder)
         #TODO remove to enable saving
-        saveAction.setEnabled(False)
+        saveAction.setEnabled(False)        
         closeAction = QtGui.QAction('Close', self)
         closeAction.setShortcut('Ctrl+Q')
         closeAction.triggered.connect(self.close)
@@ -107,7 +114,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         hline.setFrameShadow(QtGui.QFrame.Sunken)
         vbox.addWidget(hline)
         vbox.addWidget(QtGui.QLabel("Sample number"))
-        vbox.addWidget(self.sample_number)
+        ihbox = QtGui.QHBoxLayout()
+        ihbox.addWidget(self.sample_number)
+        ihbox.addWidget(self.edit_samples)
+        vbox.addLayout(ihbox)
         vbox.addWidget(self.auto_increment)
         vbox.addWidget(QtGui.QLabel("Sample name"))
         vbox.addWidget(self.sample_text)
@@ -139,8 +149,9 @@ class ApplicationWindow(QtGui.QMainWindow):
         item = self.instrument_list.currentItem()
         if item is not None:
             cfg = self.backend.config["instruments"][item.text()]
-            cfgwnd = ConfigWindow(cfg, self.inst_configs[cfg["type"]])
-            cfgwnd.exec_()
+            cfgwnd = ConfigWindow(cfg, self.inst_configs[cfg["type"]]())
+            if cfgwnd.exec_() == QtGui.QDialog.Accepted:
+                print("Dialog accepted")
 
     def del_inst_btn_clicked(self):
         row = self.instrument_list.currentRow()
@@ -154,6 +165,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.instrument_list.addItems(list(self.backend.config["instruments"].keys()))
         for name, inst in self.backend.config["instruments"].items():
             self.tabs.addTab(self.inst_widgets[inst["type"]](), name)
+        self.edit_samples.setEnabled(True)
         if "samples" in self.backend.config:
             self.sample_number.setMaximum(len(self.backend.config["samples"]))
             self.sample_number.setEnabled(True)
@@ -188,6 +200,11 @@ class ApplicationWindow(QtGui.QMainWindow):
                     self.sample_number.setValue(self.sample_number.value()+1)
                 else:
                     self.sample_number.setValue(1)
+                    
+    def edit_samples_btn_clicked(self):
+        editWnd = EditSamplesWindow(self.backend.config["samples"])
+        if editWnd.exec_() == QtGui.QDialog.Accepted:
+            print(editWnd.samples)
 
     def debug_btn_checked(self, state):
         if(state == QtCore.Qt.Checked):
@@ -250,18 +267,105 @@ class ConfigWindow(QtGui.QDialog):
     def __init__(self, config, cfgwidget):
         super(ConfigWindow, self).__init__()
         self.setWindowTitle("Instrument Config")
-        self.config = config
         self.cfgwidget = cfgwidget
+        self.cfgwidget.load_config(copy.deepcopy(config))
 
         self._create_controls()
         self._layout_controls()
 
     def _create_controls(self):
-        pass
+        self.ok = QtGui.QPushButton("Ok")
+        self.ok.clicked.connect(self.accept)
+        self.cancel = QtGui.QPushButton("Cancel")
+        self.cancel.clicked.connect(self.reject)
 
     def _layout_controls(self):
-        pass
+    
+        hbox = QtGui.QHBoxLayout()
+        hbox.addStretch(1.0)
+        hbox.addWidget(self.ok)
+        hbox.addWidget(self.cancel)
+        
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.cfgwidget, 1.0)
+        vbox.addLayout(hbox)
 
+        self.setLayout(vbox)
+        
+    def get_config(self):
+        return self.cfgwidget.get_config()
+        
+class EditSamplesWindow(QtGui.QDialog):
+    def __init__(self, samples):
+        super(EditSamplesWindow, self).__init__()
+        self.samples = copy.deepcopy(samples)
+        self._create_controls()
+        self._layout_controls()
+        
+    def _create_controls(self):
+        self.sample_list = QtGui.QListWidget()
+        
+        self.ok = QtGui.QPushButton("Ok")
+        self.ok.clicked.connect(self.accept)
+        self.cancel = QtGui.QPushButton("Cancel")
+        self.cancel.clicked.connect(self.reject)
+        
+        self.add_sample_btn = QtGui.QPushButton("Add Sample")
+        self.add_sample_btn.clicked.connect(self.add_sample_btn_clicked)
+        self.rename_sample_btn = QtGui.QPushButton("Rename Sample")
+        self.rename_sample_btn.clicked.connect(self.rename_sample_btn_clicked)
+        self.remove_sample_btn = QtGui.QPushButton("Remove Sample")
+        self.remove_sample_btn.clicked.connect(self.remove_sample_btn_clicked)
+        
+        self.move_up_btn = QtGui.QPushButton("Move sample up")
+        self.move_up_btn.clicked.connect(self.move_up_btn_clicked)
+        self.move_down_btn = QtGui.QPushButton("Move sample down")
+        self.move_down_btn.clicked.connect(self.move_down_btn_clicked)
+        
+    def _layout_controls(self):                
+        vbox = QtGui.QVBoxLayout()
+        
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.sample_list)
+        ivbox = QtGui.QVBoxLayout()
+        ivbox.addWidget(self.add_sample_btn)
+        ivbox.addWidget(self.remove_sample_btn)
+        ivbox.addStretch(1.0)
+        ivbox.addWidget(self.move_up_btn)
+        ivbox.addWidget(self.move_down_btn)
+        hbox.addLayout(ivbox)
+        vbox.addLayout(hbox)
+        
+        hbox = QtGui.QHBoxLayout()
+        hbox.addStretch(1.0)
+        hbox.addWidget(self.ok)
+        hbox.addWidget(self.cancel)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+        
+    def add_sample_btn_clicked(self):
+        text, ok = QtGui.QInputDialog.getText(self, 'Sample name input',  'Sample name:')
+        
+        if ok:
+            self.sample_list.append
+        
+    def rename_sample_btn_clicked(self):
+        pass
+        
+    def remove_sample_btn_clicked(self):
+        pass
+        
+    def move_up_btn_clicked(self):
+        pass
+        
+    def move_down_btn_clicked(self):
+        pass
+        
+    def get_samples():
+        return [item.text for item in self.sample_list.items()]
+    
+    
 if __name__ == "__main__":
     qApp = QtGui.QApplication(sys.argv)
     wnd = ApplicationWindow()

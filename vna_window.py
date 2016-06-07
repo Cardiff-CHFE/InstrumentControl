@@ -45,8 +45,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.zero_btn = QtGui.QPushButton("Zero offset")
         self.zero_btn.clicked.connect(self.zero_btn_clicked)
 
-        self.freq_list = QtGui.QListWidget()
-        self.qfac_list = QtGui.QListWidget()
+        self.segment_list = QtGui.QTableWidget()
 
 
     def _layout_controls(self):
@@ -57,10 +56,8 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         # self.graph.addItem(self.track_plot, 0,1,2,1)
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.zero_btn)
-        vbox.addWidget(QtGui.QLabel("Frequency"))
-        vbox.addWidget(self.freq_list)
-        vbox.addWidget(QtGui.QLabel("Q factor"))
-        vbox.addWidget(self.qfac_list)
+        vbox.addWidget(self.segment_list)
+        vbox.addStretch()
         hbox.addLayout(vbox, 2)
         self.setLayout(hbox)
 
@@ -87,11 +84,25 @@ class VNAWidget(QtGui.QWidget, DataWindow):
 
     def configure(self, config):
         self.set_channel_count(len(config["segments"]))
-        self.freq_list.clear()
-        self.qfac_list.clear()
-        self.seg_headings = [name for name, val in config["segments"].items()]
-        self.freq_list.addItems(["{}: 0.0GHz".format(h) for h in self.seg_headings])
-        self.qfac_list.addItems(["{}: 0.0".format(h) for h in self.seg_headings])
+        self.segment_list.clear()
+        
+        # Create list of segments sorted by frequency. This is to match
+        # the ordering in the recorded samples.
+        segments = []
+        for n, s in config["segments"].items():
+            segments.append((n, s["f0"]))
+        segments.sort(key=lambda seg: seg[1])
+        
+        seg_headings = [s[0] for s in segments]
+        self.segment_list.setRowCount(len(seg_headings))
+        self.segment_list.setColumnCount(3)        
+        self.segment_list.setVerticalHeaderLabels(seg_headings)
+        self.segment_list.setHorizontalHeaderLabels(["F0 (GHz)", "Q factor", "Insertion loss (dB)"])
+        for row, item in enumerate(seg_headings):
+            for col in range(3):
+                self.segment_list.setItem(row, col, QtGui.QTableWidgetItem("0.0"))
+        self.segment_list.resizeColumnsToContents()
+        self.segment_list.resizeRowsToContents()
 
     def add_sample(self, time, sample):
         freq = sample.f0
@@ -119,10 +130,17 @@ class VNAWidget(QtGui.QWidget, DataWindow):
             pdata.setData(self.time_queue, queue)
 
         if self.last_sample:
-            for i, f in enumerate(self.last_sample.f0):
-                self.freq_list.item(i).setText(self.seg_headings[i] + ": {:5g}".format(f))
-            for i, q in enumerate(self.last_sample.q):
-                self.qfac_list.item(i).setText(self.seg_headings[i] + ": {:5g}".format(q))
+            for row, f in enumerate(self.last_sample.f0):
+                self.segment_list.item(row, 0).setText("{:g}".format(f/1e9))
+            for row, q in enumerate(self.last_sample.q):
+                self.segment_list.item(row, 1).setText("{:g}".format(q))
+            for row, il in enumerate(self.last_sample.il):
+                self.segment_list.item(row, 2).setText("{:g}".format(il))
+                #self.segment_list.item(row, 0).setText(str())
+        #    for i, f in enumerate(self.last_sample.f0):
+        #        self.freq_list.item(i).setText(self.seg_headings[i] + ": {:5g}".format(f))
+        #    for i, q in enumerate(self.last_sample.q):
+        #        self.qfac_list.item(i).setText(self.seg_headings[i] + ": {:5g}".format(q))
 
             # self.track_plotdata.setData(self.raw_freq[0],20*np.log10(self.raw_ampl[0]))
             # q = self.last_sample.q[0]
@@ -134,14 +152,16 @@ class VNAWidget(QtGui.QWidget, DataWindow):
             # ampl = 20*np.log10(lorentz_fn(span,f0,f0/q,10**(il/20)))
             # self.track_plotdata_calc.setData(span,ampl)
 
-class VNAConfig(QtGui.QWidget, ConfigWindow):
+class VNAConfig(QtGui.QTabWidget, ConfigWindow):
     def __init__(self):
         super().__init__()
         self._create_controls()
         self._layout_controls()
 
     def _create_controls(self):
-        pass
+        self.general_tab = QtGui.QWidget()
+        self.calculations_tab = QtGui.QWidget()
 
     def _layout_controls(self):
-        pass
+        self.addTab(self.general_tab, "General")
+        self.addTab(self.calculations_tab, "Calculations")
