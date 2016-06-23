@@ -160,8 +160,134 @@ class VNAConfig(QtGui.QTabWidget, ConfigWindow):
 
     def _create_controls(self):
         self.general_tab = QtGui.QWidget()
+        self.modes_tab = VNAModesWidget()
         self.calculations_tab = QtGui.QWidget()
 
     def _layout_controls(self):
         self.addTab(self.general_tab, "General")
+        self.addTab(self.modes_tab, "Modes")
         self.addTab(self.calculations_tab, "Calculations")
+        
+    def load_config(self, config):
+        self.config = config
+        self.modes_tab.load_modes(self.config["segments"])
+        
+    def get_config(self):
+        return self.config
+        
+class VNAModesWidget(QtGui.QWidget):
+    def __init__(self):
+        super().__init__()
+        self._create_controls()
+        self._layout_controls()
+
+    def _create_controls(self):
+        self.mode_list = QtGui.QListWidget()
+        self.mode_list.currentItemChanged.connect(self.list_item_changed)
+        self.add_mode_btn = QtGui.QPushButton("Add")
+        self.add_mode_btn.clicked.connect(self.add_mode_btn_clicked)
+        self.remove_mode_btn = QtGui.QPushButton("Remove")
+        self.remove_mode_btn.clicked.connect(self.remove_mode_btn_clicked)
+        self.load_mode_btn = QtGui.QPushButton("Load")
+        self.load_mode_btn.clicked.connect(self.load_mode_btn_clicked)
+        self.mode_name_txt = QtGui.QLineEdit()
+        self.mode_name_txt.editingFinished.connect(self.mode_name_txt_finish)
+        self.f0_spinbox = QtGui.QDoubleSpinBox()
+        self.f0_spinbox.setRange(0.0, 99.0)
+        self.f0_spinbox.setDecimals(5)
+        self.f0_spinbox.valueChanged.connect(self.f0_spinbox_changed)
+        self.span_spinbox = QtGui.QDoubleSpinBox()
+        self.span_spinbox.setRange(0.0, 100000.0)
+        self.span_spinbox.setDecimals(3)
+        self.span_spinbox.valueChanged.connect(self.span_spinbox_changed)
+        
+    def _layout_controls(self):
+        hbox = QtGui.QHBoxLayout()
+        
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.mode_list)
+        ihbox = QtGui.QHBoxLayout()
+        ihbox.addWidget(self.add_mode_btn)
+        ihbox.addWidget(self.remove_mode_btn)
+        ihbox.addWidget(self.load_mode_btn)
+        vbox.addLayout(ihbox)        
+        hbox.addLayout(vbox)
+        
+        groupBox = QtGui.QGroupBox("Mode settings")
+        ivbox = QtGui.QVBoxLayout()
+        ivbox.addWidget(QtGui.QLabel("Mode name"))
+        ivbox.addWidget(self.mode_name_txt)
+        ivbox.addWidget(QtGui.QLabel("Frequency (GHz)"))
+        ivbox.addWidget(self.f0_spinbox)
+        ivbox.addWidget(QtGui.QLabel("Span (KHz)"))
+        ivbox.addWidget(self.span_spinbox)  
+        ivbox.addStretch(1.0)
+        
+        groupBox.setLayout(ivbox)
+        hbox.addWidget(groupBox)
+        
+        self.setLayout(hbox)
+        
+    def load_modes(self, modes):
+        self.modes = modes
+        self.mode_list.clear()
+        self.mode_list.addItems(list(modes.keys()))
+        self.mode_name_txt.setEnabled(False)
+        self.f0_spinbox.setEnabled(False)
+        self.span_spinbox.setEnabled(False)
+        
+        
+    def list_item_changed(self, current, previous):
+        if current:
+            self.mode_name_txt.setEnabled(True)
+            self.f0_spinbox.setEnabled(True)
+            self.span_spinbox.setEnabled(True)
+            
+            text = current.text()
+            self.mode_name_txt.setText(text)
+            self.f0_spinbox.setValue(self.modes[text]["f0"]/1e9)
+            self.span_spinbox.setValue(self.modes[text]["span"]/1e3)
+            
+        else:
+            self.mode_name_txt.setEnabled(False)
+            self.f0_spinbox.setEnabled(False)
+            self.v.setEnabled(False)
+            
+        
+    def add_mode_btn_clicked(self):
+        i = 1
+        while "Mode {}".format(i) in self.modes.keys():
+            i+=1
+        modename = "Mode {}".format(i)
+        self.modes[modename] = {
+            "f0": 2.5E+09,
+            "span": 50E+06,
+            "points": 101,
+            "ifbw": 10e3,
+            "power": 0.0,
+            "gnmp": 0.0
+        }
+        self.mode_list.addItem(modename)
+        
+        
+    def remove_mode_btn_clicked(self):
+        pass
+        
+    def load_mode_btn_clicked(self):
+        pass
+        
+    def mode_name_txt_finish(self):
+        newtxt = self.mode_name_txt.text()
+        if not newtxt in self.modes.keys():
+            self.modes[newtxt] = self.modes.pop(self.mode_list.currentItem().text())
+            self.mode_list.currentItem().setText(newtxt)
+        elif self.mode_list.currentItem().text() != newtxt:
+            existsErr = QtGui.QErrorMessage()
+            existsErr.showMessage("Mode with the same name already exists")
+            self.mode_name_txt.setText(self.mode_list.currentItem().text())
+            
+    def f0_spinbox_changed(self, val):
+        self.modes[self.mode_list.currentItem().text()]["f0"] = val*1e9
+        
+    def span_spinbox_changed(self, val):
+        self.modes[self.mode_list.currentItem().text()]["span"] = val*1e3

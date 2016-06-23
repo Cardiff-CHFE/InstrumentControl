@@ -130,7 +130,7 @@ class VNA(Instrument):
 
     def get_headers(self):
         h = ["Frequency {}/Hz".format(s.name) for s in self.cfg.segments]
-        h += ["Q factor {}/Hz".format(s.name) for s in self.cfg.segments]
+        h += ["Q factor {}".format(s.name) for s in self.cfg.segments]
         h += ["Insertion loss {}/dB".format(s.name) for s in self.cfg.segments]
         return h
 
