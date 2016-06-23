@@ -79,6 +79,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.edit_samples.clicked.connect(self.edit_samples_btn_clicked)
 
         self.auto_increment = QtGui.QCheckBox("Auto increment")
+        self.auto_increment.setChecked(True)
         
         self.record_duration = QtGui.QDoubleSpinBox()
         self.record_duration.setRange(0, 10000)
