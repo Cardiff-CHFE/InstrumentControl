@@ -28,6 +28,8 @@ class Backend(object):
             pass
         if not "instruments" in self.config:
             self.config["instruments"] = {}
+        if not "record_duration" in self.config:
+            self.config["record_duration"] = 0.0
         if "datadir" in self.config:
             # Update data dir relative to config file (unless abs path used)
             self.datadir = os.path.normpath(os.path.join(self.datadir, self.config["datadir"]))
@@ -81,6 +83,8 @@ class Backend(object):
         for name, inst in self.instruments.items():
             self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
         self.logging = True
+        if self.config["record_duration"] > 0.0:
+            self.log_start = time.time()
 
     def stop_logging(self):
         self.logging = False
@@ -95,6 +99,11 @@ class Backend(object):
             if name in fns:
                 for s in samples:
                     fns[name](s[0], s[1])
+        if self.config["record_duration"] > 0.0 and self.logging:
+            if time.time() - self.log_start > self.config["record_duration"]:
+                self.stop_logging()
+                return False
+        return True
 
 
 class DataLogger(object):

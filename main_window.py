@@ -47,24 +47,28 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.instrument_list = QtGui.QListWidget()
 
         self.add_inst_btn = QtGui.QPushButton("Add")
+        self.add_inst_btn.setEnabled(False)
         self.add_inst_btn.clicked.connect(self.add_inst_btn_clicked)
-        #TODO remove once implemented
-        #self.add_inst_btn.setEnabled(False)
+        
         self.cfg_inst_btn = QtGui.QPushButton("Configure")
-        self.cfg_inst_btn.clicked.connect(self.cfg_inst_btn_clicked)
-        #self.cfg_inst_btn.setEnabled(False)
+        self.cfg_inst_btn.setEnabled(False)
+        self.cfg_inst_btn.clicked.connect(self.cfg_inst_btn_clicked)  
+        
         self.del_inst_btn = QtGui.QPushButton("Delete")
-        self.del_inst_btn.clicked.connect(self.del_inst_btn_clicked)
+        self.del_inst_btn.setEnabled(False)
+        self.del_inst_btn.clicked.connect(self.del_inst_btn_clicked)        
 
         self.run_btn = QtGui.QPushButton("Run experiment")
         self.run_btn.setCheckable(True)
-        self.run_btn.clicked[bool].connect(self.run_btn_clicked)
+        self.run_btn.setEnabled(False)
+        self.run_btn.clicked[bool].connect(self.run_btn_clicked)        
 
         self.sample_text = QtGui.QLineEdit()
         self.record_btn = QtGui.QPushButton("Record data")
         self.record_btn.setCheckable(True)
+        self.record_btn.setEnabled(False)
         self.record_btn.clicked[bool].connect(self.record_btn_clicked)
-
+        
         self.sample_number = QtGui.QSpinBox()
         self.sample_number.setMinimum(1)
         self.sample_number.setEnabled(False)
@@ -75,6 +79,11 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.edit_samples.clicked.connect(self.edit_samples_btn_clicked)
 
         self.auto_increment = QtGui.QCheckBox("Auto increment")
+        
+        self.record_duration = QtGui.QDoubleSpinBox()
+        self.record_duration.setRange(0, 10000)
+        self.record_duration.setEnabled(False)
+        self.record_duration.valueChanged.connect(self.record_duration_changed)
 
         self.tabs = QtGui.QTabWidget()
 
@@ -119,9 +128,14 @@ class ApplicationWindow(QtGui.QMainWindow):
         ihbox.addWidget(self.edit_samples)
         vbox.addLayout(ihbox)
         vbox.addWidget(self.auto_increment)
+        
+        vbox.addWidget(QtGui.QLabel("Record duration in seconds (0=forever):"))
+        vbox.addWidget(self.record_duration)
+        
         vbox.addWidget(QtGui.QLabel("Sample name"))
         vbox.addWidget(self.sample_text)
         vbox.addWidget(self.record_btn)
+        
 
         hbox = QtGui.QHBoxLayout()
         hbox.addLayout(vbox)
@@ -132,12 +146,21 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         self.setCentralWidget(window)
         self.resize(900,500)
+        
+    def enable_config_widgets(self):
+        self.add_inst_btn.setEnabled(True)
+        self.cfg_inst_btn.setEnabled(True)
+        self.del_inst_btn.setEnabled(True)
+        self.run_btn.setEnabled(True)
+        self.edit_samples.setEnabled(True)
+        self.record_duration.setEnabled(True)
+        
 
     def open_folder(self):
         cfgfile = str(QtGui.QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)"))
         self.backend.load_configfile(cfgfile)
+        self.enable_config_widgets()
         self.update_gui()
-        self.sample_idx = 13
 
     def save_folder(self):
         self.backend.save_configfile()
@@ -151,7 +174,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             cfg = self.backend.config["instruments"][item.text()]
             cfgwnd = ConfigWindow(cfg, self.inst_configs[cfg["type"]]())
             if cfgwnd.exec_() == QtGui.QDialog.Accepted:
-                print("Dialog accepted")
+                self.backend.config["instruments"][item.text()] = cfgwnd.get_config()
 
     def del_inst_btn_clicked(self):
         row = self.instrument_list.currentRow()
@@ -165,15 +188,22 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.instrument_list.addItems(list(self.backend.config["instruments"].keys()))
         for name, inst in self.backend.config["instruments"].items():
             self.tabs.addTab(self.inst_widgets[inst["type"]](), name)
-        self.edit_samples.setEnabled(True)
-        if "samples" in self.backend.config:
+        if "samples" in self.backend.config and len(self.backend.config["samples"]) > 0:
             self.sample_number.setMaximum(len(self.backend.config["samples"]))
             self.sample_number.setEnabled(True)
             self.sample_number.setValue(1)
             #Make sure sample_text is updated even if sample_number doesn't change
             self.sample_number_changed(1)
         else:
-            self.sample_number.setEnabled(False)
+            self.sample_number.setEnabled(False)            
+        self.record_duration.setValue(self.backend.config["record_duration"])
+        
+    def increment_sample(self):
+        if self.auto_increment.isChecked() and "samples" in self.backend.config:
+                if self.sample_number.value() < self.sample_number.maximum():
+                    self.sample_number.setValue(self.sample_number.value()+1)
+                else:
+                    self.sample_number.setValue(1)
 
     def run_btn_clicked(self, running):
         if running:
@@ -183,28 +213,30 @@ class ApplicationWindow(QtGui.QMainWindow):
             for n in range(self.tabs.count()):
                 name = self.tabs.tabText(n)
                 self.tabs.widget(n).configure(self.backend.config["instruments"][name])
+            self.record_btn.setEnabled(True)
         else:
             self.backend.stop()
             self.timer.stop()
+            self.record_btn.setEnabled(False)
 
     def sample_number_changed(self, val):
         self.sample_text.setText(self.backend.config["samples"][val-1])
+        
+    def record_duration_changed(self, val):
+        self.backend.config["record_duration"] = val
 
     def record_btn_clicked(self, checked):
         if checked:
             self.backend.start_logging(self.sample_text.text())
         else:
             self.backend.stop_logging()
-            if self.auto_increment.isChecked() and "samples" in self.backend.config:
-                if self.sample_number.value() < self.sample_number.maximum():
-                    self.sample_number.setValue(self.sample_number.value()+1)
-                else:
-                    self.sample_number.setValue(1)
+            self.increment_sample()
                     
     def edit_samples_btn_clicked(self):
         editWnd = EditSamplesWindow(self.backend.config["samples"])
         if editWnd.exec_() == QtGui.QDialog.Accepted:
-            print(editWnd.samples)
+            self.backend.config["samples"] = editWnd.get_samples()
+            self.update_gui()
 
     def debug_btn_checked(self, state):
         if(state == QtCore.Qt.Checked):
@@ -216,7 +248,9 @@ class ApplicationWindow(QtGui.QMainWindow):
 
     def timer_timeout(self):
         tabfns = {self.tabs.tabText(n): self.tabs.widget(n).add_sample for n in range(self.tabs.count())}
-        self.backend.process_samples(tabfns)
+        if not self.backend.process_samples(tabfns):
+            self.record_btn.setChecked(False)
+            self.increment_sample()
 
         for n in range(self.tabs.count()):
             self.tabs.widget(n).refresh()
@@ -298,9 +332,10 @@ class ConfigWindow(QtGui.QDialog):
 class EditSamplesWindow(QtGui.QDialog):
     def __init__(self, samples):
         super(EditSamplesWindow, self).__init__()
-        self.samples = copy.deepcopy(samples)
         self._create_controls()
         self._layout_controls()
+        
+        self.sample_list.addItems(samples)
         
     def _create_controls(self):
         self.sample_list = QtGui.QListWidget()
@@ -329,7 +364,8 @@ class EditSamplesWindow(QtGui.QDialog):
         hbox.addWidget(self.sample_list)
         ivbox = QtGui.QVBoxLayout()
         ivbox.addWidget(self.add_sample_btn)
-        ivbox.addWidget(self.remove_sample_btn)
+        ivbox.addWidget(self.rename_sample_btn)
+        ivbox.addWidget(self.remove_sample_btn)        
         ivbox.addStretch(1.0)
         ivbox.addWidget(self.move_up_btn)
         ivbox.addWidget(self.move_down_btn)
@@ -348,22 +384,36 @@ class EditSamplesWindow(QtGui.QDialog):
         text, ok = QtGui.QInputDialog.getText(self, 'Sample name input',  'Sample name:')
         
         if ok:
-            self.sample_list.append
+            self.sample_list.addItem(text)
         
     def rename_sample_btn_clicked(self):
-        pass
+        item = self.sample_list.currentItem()
+        if item:
+            text, ok = QtGui.QInputDialog.getText(self, 'Rename sample',  'New sample name:')
+            if ok:
+                item.setText(text)
         
     def remove_sample_btn_clicked(self):
-        pass
+        row = self.sample_list.currentRow()
+        if row >= 0:
+            item = self.sample_list.takeItem(row)
         
     def move_up_btn_clicked(self):
-        pass
+        row = self.sample_list.currentRow()
+        if row > 0:
+            item = self.sample_list.takeItem(row)
+            self.sample_list.insertItem(row-1, item)
+            self.sample_list.setCurrentRow(row-1)
         
     def move_down_btn_clicked(self):
-        pass
+        row = self.sample_list.currentRow()
+        if row >= 0 and row < self.sample_list.count()-1:
+            item = self.sample_list.takeItem(row)
+            self.sample_list.insertItem(row+1, item)
+            self.sample_list.setCurrentRow(row+1)
         
-    def get_samples():
-        return [item.text for item in self.sample_list.items()]
+    def get_samples(self):
+        return [self.sample_list.item(i).text() for i in range(self.sample_list.count())]
     
     
 if __name__ == "__main__":
