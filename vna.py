@@ -5,6 +5,7 @@ from pyvisa.errors import VisaIOError
 import math
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.stats import lineregress
 import time
 import copy
 
@@ -91,22 +92,32 @@ class VNA(Instrument):
             cplx = cplx.reshape((-1,2)).T
             ampl = np.sqrt(cplx[0]**2 + cplx[1]**2)
             freq = self.get_freq_data()
-            try:
+            
                 start = 0
+                lost_track = False
                 for seg in self.cfg.segments:
                     f = freq[start:seg.points+start]
                     a = ampl[start:seg.points+start]
                     start += seg.points
-
-                    bw, f0, q, il = lorentz_fit(f,a)
-                    data.bw.append(bw)
-                    data.f0.append(f0)
-                    data.q.append(q)
-                    data.il.append(il)
-                    data.freq.append(f)
-                    data.ampl.append(a)
-            except RuntimeError:
-                return None
+                    try:
+                        bw, f0, q, il = lorentz_fit(f,a)
+                        data.bw.append(bw)
+                        data.f0.append(f0)
+                        data.q.append(q)
+                        data.il.append(il)
+                        data.freq.append(f)
+                        data.ampl.append(a)
+                    except RuntimeError:
+                        lost_track = True
+                        slope, intercept, r-value, p-value, stderr = lineregress(f, a)
+                        if(slope > 0):
+                            seg.f0 += seg.span
+                        else:
+                            seg.f0 -= seg.span
+                            
+                if lost_track:
+                    self.set_segments(self.cfg.segments)
+                    return None
 
             if self.cfg.track_freq or self.cfg.track_span:
                 retracked = False
