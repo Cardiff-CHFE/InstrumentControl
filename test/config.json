@@ -18,51 +18,5 @@
     "samples": [
         "Empty Cavity", "Empty Tube", "CoRu", "MC Co20", "MC Co20_2", "MC Co50",
         "MC Co20 spent", "MC Fe20", "SiO2 20", "SiO2 50", "SiO2 50 spent"
-    ],
-    "calculations": {
-        "modes": ["vna0:TM010", "vna0:TM011"],
-        "modetypes": ["Electric", "Electric"],
-        "samples": [
-            {
-                "name": "CoRu",
-                "sample": ["CoRu"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "MC Co20",
-                "sample": ["MC Co20", "MC Co20_2"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "MC Co50",
-                "sample": ["MC Co50"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "MC Co20 spent",
-                "sample": ["MC Co20 spent"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "MC Fe20",
-                "sample": ["MC Fe20"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "SiO2 20",
-                "sample": ["SiO2 20"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "SiO2 50",
-                "sample": ["SiO2 50"],
-                "reference": ["Empty Tube"]
-            },
-            {
-                "name": "SiO2 50 spent",
-                "sample": ["SiO2 50 spent"],
-                "reference": ["Empty Tube"]
-            }
-        ]
-    }
+    ]
 }

@@ -43,6 +43,7 @@ class Instrument(object):
         self.queue = queue.Queue()
         self.running = False
         self.thread = threading.Thread(target=self._run)
+        self.commandqueue = queue.Queue()
 
     @staticmethod
     def match_device(devname):
@@ -69,6 +70,11 @@ class Instrument(object):
 
     def _run(self):
         while self.running:
+            while True:
+                try:
+                    self.commandqueue.get_nowait()(self) # Get and execute command
+                except queue.Empty:
+                    break
             elapsed = time.time()-self.timestart
             s = self.sample(elapsed)
             if s is not None:
@@ -84,6 +90,9 @@ class Instrument(object):
         """Stop the acquire loop"""
         self.running = False
         self.thread.join()
+        
+    def runcmd(self, command):
+        self.commandqueue.put(command)
 
     def get_samples(self):
         """Retrieve all collected samples from the sample queue"""
@@ -94,8 +103,16 @@ class Instrument(object):
             except queue.Empty:
                 break
         return results
+        
+def runlater(func):
+    def func_wrapper(self, *args, **kwargs):
+        self.runcmd(lambda self: func(self, *args, **kwargs))
+    return func_wrapper
 
 class DataWindow(object):
+    def __init__(self):
+        self.instrument = None
+        
     def configure(self, config):
         """Override this to configure the window"""
         pass

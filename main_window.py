@@ -210,9 +210,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         if running:
             self.backend.load_instruments()
             self.backend.start()
-            self.timer.start(250)
+            self.timer.start(500)
             for n in range(self.tabs.count()):
                 name = self.tabs.tabText(n)
+                self.tabs.widget(n).instrument = self.backend.instruments[name]
                 self.tabs.widget(n).configure(self.backend.config["instruments"][name])
             self.record_btn.setEnabled(True)
         else:

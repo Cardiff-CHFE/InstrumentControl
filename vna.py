@@ -1,11 +1,11 @@
-from instrument import Instrument
+from instrument import Instrument, runlater
 import scpi
 from scpi import onoff
 from pyvisa.errors import VisaIOError
 import math
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.stats import lineregress
+from scipy.stats import linregress
 import time
 import copy
 
@@ -13,7 +13,6 @@ class VNA(Instrument):
     def __init__(self, resource):
         super().__init__()
         self.res = scpi.Wrapper(resource)
-        self.cfg = {}
 
     @staticmethod
     def match_device(devname):
@@ -93,9 +92,10 @@ class VNA(Instrument):
             ampl = np.sqrt(cplx[0]**2 + cplx[1]**2)
             freq = self.get_freq_data()
             
-                start = 0
-                lost_track = False
-                for seg in self.cfg.segments:
+            start = 0
+            lost_track = False
+            for seg in self.cfg.segments:
+                if seg.enabled:
                     f = freq[start:seg.points+start]
                     a = ampl[start:seg.points+start]
                     start += seg.points
@@ -109,27 +109,36 @@ class VNA(Instrument):
                         data.ampl.append(a)
                     except RuntimeError:
                         lost_track = True
-                        slope, intercept, r-value, p-value, stderr = lineregress(f, a)
+                        slope, intercept, rvalue, pvalue, stderr = linregress(f, a)
                         if(slope > 0):
                             seg.f0 += seg.span
                         else:
                             seg.f0 -= seg.span
-                            
-                if lost_track:
-                    self.set_segments(self.cfg.segments)
-                    return None
+                else: #segment not enabled
+                    data.bw.append(None)
+                    data.f0.append(None)
+                    data.q.append(None)
+                    data.il.append(None)
+                    data.freq.append(None)
+                    data.ampl.append(None)
+                        
+            if lost_track:
+                self.set_segments(self.cfg.segments)
+                return None
 
-            if self.cfg.track_freq or self.cfg.track_span:
+            if (self.cfg.track_freq or self.cfg.track_span) and self.cfg.track_enabled:
                 retracked = False
                 for seg, f0, bw in zip(self.cfg.segments, data.f0, data.bw):
+                    if not seg.enabled:
+                        continue
                     trackf, tracks = track_window(seg.f0, seg.span, f0, bw,
-                                                  bw_factor=self.cfg.bw_factor)
+                                                  bw_factor=self.cfg.get_bw_factor())
                     if (trackf and self.cfg.track_freq) or (tracks and self.cfg.track_span):
                         retracked = True
                         if self.cfg.track_freq:
                             seg.f0 = f0
                         if self.cfg.track_span:
-                            seg.span = bw*self.cfg.bw_factor
+                            seg.span = bw*self.cfg.get_bw_factor()
                 if retracked:
                     self.set_segments(self.cfg.segments)
 
@@ -148,20 +157,27 @@ class VNA(Instrument):
     def format_sample(self, data):
         return data.f0 + data.q + data.il
 
-    def set_segments(self, segments, channel=1):        
+    def set_segments(self, segments, channel=1):
+        enacount = 0
         if self.model == "N5232A":
-            data = ["SSTOP", len(segments)]
+            data = ["SSTOP", None]
             for s in segments:
-                data += [1, s.points, s.f0, s.span, s.ifbw, 0, s.power]
+                if s.enabled:
+                    enacount+=1
+                    data += [1, s.points, s.f0, s.span, s.ifbw, 0, s.power]
+            data[1] = enacount
             
             self.res.write(":SENS{}:SEGM:BWID:CONT {}", channel, onoff(True))
             self.res.write(":SENS{}:SEGM:POW:CONT {}", channel, onoff(True))
             self.res.write_ascii_values(":SENS{}:SEGM:LIST", data, channel)
         else:
             #[<buf>,<stim>,<ifbw>,<pow>,<del>,<time>,<segm>]
-            data = [5, 1, 1, 1, 0, 0, len(segments)]
+            data = [5, 1, 1, 1, 0, 0, None]
             for s in segments:
-                data += [s.f0, s.span, s.points, s.ifbw, s.power]
+                if s.enabled:
+                    enacount+=1
+                    data += [s.f0, s.span, s.points, s.ifbw, s.power]
+            data[6] = enacount
             self.res.write_ascii_values(":SENS{}:SEGM:DATA", data, channel)
 
     def setup_marker(self, freq, marker=1, channel=1):
@@ -185,7 +201,19 @@ class VNA(Instrument):
             return self.res.query_ascii_values(":CALC{}:X?", channel)
         else:
             return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
-
+            
+    @runlater
+    def set_segment_enabled(self, segment, enabled):
+        self.cfg.segments[segment].enabled = enabled
+        self.set_segments(self.cfg.segments)
+        
+    @runlater
+    def set_bw_factor_override(self, factor):
+        self.cfg.bw_factor_override = factor
+        
+    @runlater
+    def set_tracking_override(self, enabled):
+        self.cfg.track_enabled = enabled
 
 class VNAConfig(object):
     def __init__(self, config):
@@ -198,6 +226,14 @@ class VNAConfig(object):
         self.track_span = config["track_span"]
         self.use_markers = config["use_markers"]
         self.bw_factor = config["bandwidth_factor"]
+        self.bw_factor_override = None
+        self.track_enabled = True
+        
+    def get_bw_factor(self):
+        if self.bw_factor_override is not None:
+            return self.bw_factor_override
+        else:
+            return self.bw_factor
 
 
 class Segment(object):
@@ -208,6 +244,7 @@ class Segment(object):
         self.points = points
         self.ifbw = ifbw
         self.power = power
+        self.enabled = True
 
 class Sample(object):
     def __init__(self):
