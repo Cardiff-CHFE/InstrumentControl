@@ -187,6 +187,7 @@ class ApplicationWindow(QtGui.QMainWindow):
     def update_gui(self):
         self.instrument_list.clear()
         self.instrument_list.addItems(list(self.backend.config["instruments"].keys()))
+        self.tabs.clear()
         for name, inst in self.backend.config["instruments"].items():
             self.tabs.addTab(self.inst_widgets[inst["type"]](), name)
         if "samples" in self.backend.config and len(self.backend.config["samples"]) > 0:
