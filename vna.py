@@ -258,12 +258,13 @@ class Sample(object):
         self.ampl = []
 
 def track_window(center, span, f0, bw, center_err=0.8,
-                 span_err=0.7, bw_factor=8.0):
+                 span_err=0.3, bw_factor=8.0):
     ferr = math.fabs(center-f0) + bw/2 #Ensure +- bw markers stay within
                                        #center_err of window
     retrackf = ferr > span*center_err*0.5
 
-    retracks = math.fabs(bw*bw_factor-span)/span > span_err
+    retracks = (bw*bw_factor)/span > 1 + span_err
+    retracks = retracks or span/(bw*bw_factor) > 1 + span_err
     return retrackf, retracks
 
 def lorentz_fn(x, f0, bw, pmax):
