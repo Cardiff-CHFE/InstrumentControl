@@ -78,10 +78,11 @@ class Backend(object):
         self.instruments = {}
 
     def start_logging(self, sample_name):
-        self.data_logger.open_files(self.instruments.keys(),
+        exists = self.data_logger.open_files(self.instruments.keys(),
                                     os.path.join(self.datadir, sample_name))
-        for name, inst in self.instruments.items():
-            self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
+        for ((name, inst), existing) in zip(self.instruments.items(), exists):
+            if not existing:
+                self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
         self.logging = True
         if self.config["record_duration"] > 0.0:
             self.log_start = time.time()
@@ -112,12 +113,19 @@ class DataLogger(object):
         self.writers = {}
 
     def open_files(self, names, path):
+        exists = []
         if not os.path.exists(path):
             os.makedirs(path)
         for name in names:
-            fp = open(os.path.join(path, name + ".csv"), 'a', newline='')
+            fname = os.path.join(path, name + ".csv")            
+            if os.path.isfile(fname):
+                exists.append(True)
+            else:
+                exists.append(False)
+            fp = open(fname, 'a', newline='')
             self.files[name] = fp
             self.writers[name] = csv.writer(fp)
+        return exists
 
     def close_files(self):
         for f in self.files.values():
