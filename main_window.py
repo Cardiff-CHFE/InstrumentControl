@@ -360,7 +360,7 @@ class EditSamplesWindow(QtGui.QDialog):
         self.move_down_btn = QtGui.QPushButton("Move sample down")
         self.move_down_btn.clicked.connect(self.move_down_btn_clicked)
         
-    def _layout_controls(self):                
+    def _layout_controls(self):
         vbox = QtGui.QVBoxLayout()
         
         hbox = QtGui.QHBoxLayout()

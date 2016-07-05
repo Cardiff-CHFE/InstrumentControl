@@ -107,13 +107,14 @@ class VNA(Instrument):
                         data.il.append(il)
                         data.freq.append(f)
                         data.ampl.append(a)
-                    except RuntimeError:
+                    except (RuntimeError, ValueError):
                         lost_track = True
-                        slope, intercept, rvalue, pvalue, stderr = linregress(f, a)
-                        if(slope > 0):
-                            seg.f0 += seg.span
-                        else:
-                            seg.f0 -= seg.span
+                        if self.cfg.track_freq and self.cfg.track_enabled:
+                            slope, intercept, rvalue, pvalue, stderr = linregress(f, a)
+                            if(slope > 0):
+                                seg.f0 += seg.span
+                            else:
+                                seg.f0 -= seg.span
                 else: #segment not enabled
                     data.bw.append(None)
                     data.f0.append(None)
@@ -123,7 +124,8 @@ class VNA(Instrument):
                     data.ampl.append(None)
                         
             if lost_track:
-                self.set_segments(self.cfg.segments)
+                if self.cfg.track_freq and self.cfg.track_enabled:
+                    self.set_segments(self.cfg.segments)
                 return None
 
             if (self.cfg.track_freq or self.cfg.track_span) and self.cfg.track_enabled:
