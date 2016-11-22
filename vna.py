@@ -203,12 +203,12 @@ class VNA(Instrument):
             return self.res.query_ascii_values(":CALC{}:X?", channel)
         else:
             return self.res.query_ascii_values(":SENS{}:FREQ:DATA?", channel)
-            
+
     @runlater
     def set_segment_enabled(self, segment, enabled):
         self.cfg.segments[segment].enabled = enabled
         self.set_segments(self.cfg.segments)
-        
+
     @runlater
     def set_bw_factor_override(self, factor):
         self.cfg.bw_factor_override = factor
@@ -216,6 +216,13 @@ class VNA(Instrument):
     @runlater
     def set_tracking_override(self, enabled):
         self.cfg.track_enabled = enabled
+        
+    @runlater
+    def reset_tracking(self):
+        for segment in self.cfg.segments:
+            segment.f0 = segment.f0_default
+            segment.span = segment.span_default
+        self.set_segments(self.cfg.segments)
 
 class VNAConfig(object):
     def __init__(self, config):
@@ -241,8 +248,8 @@ class VNAConfig(object):
 class Segment(object):
     def __init__(self, name, f0=2.495e9, span=50e6, points=51, ifbw=1000, power=0):
         self.name = name
-        self.f0 = f0
-        self.span = span
+        self.f0 = self.f0_default = f0
+        self.span = self.span_default = span
         self.points = points
         self.ifbw = ifbw
         self.power = power

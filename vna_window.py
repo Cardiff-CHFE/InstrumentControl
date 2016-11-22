@@ -57,10 +57,12 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.track_enable = QtGui.QCheckBox("Enable Tracking")
         self.track_enable.setChecked(True)
         self.track_enable.stateChanged.connect(self.track_enable_changed)
+        
+        self.reset_tracking = QtGui.QPushButton("Reset Tracking")
+        self.reset_tracking.clicked.connect(self.reset_tracking_pressed)
 
         self.segment_list = QtGui.QTableWidget()
         self.segment_list.itemClicked.connect(self.segment_list_clicked)
-
 
     def _layout_controls(self):
         hbox = QtGui.QHBoxLayout()
@@ -73,6 +75,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         vbox.addWidget(self.bw_override)
         vbox.addWidget(self.bw_factor)
         vbox.addWidget(self.track_enable)
+        vbox.addWidget(self.reset_tracking)
         vbox.addWidget(self.segment_list)
         vbox.addStretch()
         hbox.addLayout(vbox, 2)
@@ -185,6 +188,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
             
     def track_enable_changed(self, state):
         self.instrument.set_tracking_override(state == QtCore.Qt.Checked)
+        self.bw_override.setEnabled(state == QtCore.Qt.Checked)
             
     def segment_list_clicked(self, tableItem):
         if self.segment_list.column(tableItem) == 0:
@@ -192,6 +196,9 @@ class VNAWidget(QtGui.QWidget, DataWindow):
             checked = tableItem.checkState() == QtCore.Qt.Checked
             print("row {} is {}".format(row, "checked" if checked else "unchecked"))
             self.instrument.set_segment_enabled(row, checked)
+            
+    def reset_tracking_pressed(self):
+        self.instrument.reset_tracking()
 
 class VNAConfig(QtGui.QTabWidget, ConfigWindow):
     def __init__(self):
