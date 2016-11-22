@@ -9,8 +9,8 @@ import vna
 import dc_power
 from backend import Backend
 
-from vna_window import VNAWidget, VNAConfig
-from dc_power_window import DCWidget, DCConfig
+from vna_window import VNAWidget, VNAConfigWindow
+from dc_power_window import DCWidget, DCConfigWindow
 
 class ApplicationWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -39,8 +39,8 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         # Instrument configurations are GUIs for changing instrument settings
         self.inst_configs = {
-            "vna": VNAConfig,
-            "dc": DCConfig
+            "vna": VNAConfigWindow,
+            "dc": DCConfigWindow
         }
 
     def _create_controls(self):

@@ -26,7 +26,7 @@ class DCWidget(QtGui.QWidget, DataWindow):
     def refresh(self):
         pass
 
-class DCConfig(QtGui.QWidget, ConfigWindow):
+class DCConfigWindow(QtGui.QWidget, ConfigWindow):
     def __init__(self):
         super().__init__()
         self._create_controls()
@@ -36,4 +36,10 @@ class DCConfig(QtGui.QWidget, ConfigWindow):
         pass
 
     def _layout_controls(self):
+        pass
+
+    def load_config(self, config):
+        pass
+        
+    def get_config(self):
         pass

@@ -200,7 +200,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
     def reset_tracking_pressed(self):
         self.instrument.reset_tracking()
 
-class VNAConfig(QtGui.QTabWidget, ConfigWindow):
+class VNAConfigWindow(QtGui.QTabWidget, ConfigWindow):
     def __init__(self):
         super().__init__()
         self._create_controls()
