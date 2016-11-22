@@ -44,6 +44,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         }
 
     def _create_controls(self):
+        """Create all the QT controls"""
         self.instrument_list = QtGui.QListWidget()
 
         self.add_inst_btn = QtGui.QPushButton("Add")
@@ -106,6 +107,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         fileMenu.addAction(closeAction)
 
     def _layout_controls(self):
+        """Position controls within the window"""
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(QtGui.QLabel("Instruments"))
         vbox.addWidget(self.instrument_list)
@@ -151,6 +153,11 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.resize(900,500)
         
     def enable_config_widgets(self):
+        """
+        Enable buttons to modify configuration settings.
+        
+        This is typically called when a configuration file has been loaded
+        """
         self.add_inst_btn.setEnabled(True)
         self.cfg_inst_btn.setEnabled(True)
         self.del_inst_btn.setEnabled(True)
@@ -169,9 +176,11 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.backend.save_configfile()
 
     def add_inst_btn_clicked(self):
+        """Add instrument button click handler"""
         pass
 
     def cfg_inst_btn_clicked(self):
+        """Configure instrument button click handler"""
         item = self.instrument_list.currentItem()
         if item is not None:
             cfg = self.backend.config["instruments"][item.text()]
@@ -180,6 +189,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                 self.backend.config["instruments"][item.text()] = cfgwnd.get_config()
 
     def del_inst_btn_clicked(self):
+        """delete instrument button click handler"""
         row = self.instrument_list.currentRow()
         item = self.instrument_list.takeItem(row)
         if item is not None:
@@ -187,6 +197,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.tabs.removeTab(row)
 
     def update_gui(self):
+        """Resets the user interface with the new configuration"""
         self.instrument_list.clear()
         self.instrument_list.addItems(list(self.backend.config["instruments"].keys()))
         self.tabs.clear()
@@ -203,6 +214,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.record_duration.setValue(self.backend.config["record_duration"])
         
     def increment_sample(self):
+        """Auto-increment the sample number if enabled in the gui"""
         if self.auto_increment.isChecked() and "samples" in self.backend.config:
                 if self.sample_number.value() < self.sample_number.maximum():
                     self.sample_number.setValue(self.sample_number.value()+1)
@@ -210,6 +222,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                     self.sample_number.setValue(1)
 
     def run_btn_clicked(self, running):
+        """Start/stop the running of the instruments"""
         if running:
             self.backend.load_instruments()
             self.backend.start()
@@ -231,19 +244,22 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.backend.config["record_duration"] = val
 
     def record_btn_clicked(self, checked):
+        """Enable/disable recording of samples to file"""
         if checked:
             self.backend.start_logging(self.sample_text.text())
         else:
             self.backend.stop_logging()
             self.increment_sample()
-                    
+    
     def edit_samples_btn_clicked(self):
+        """Display window to edit list of samples names"""
         editWnd = EditSamplesWindow(self.backend.config["samples"])
         if editWnd.exec_() == QtGui.QDialog.Accepted:
             self.backend.config["samples"] = editWnd.get_samples()
             self.update_gui()
 
     def debug_btn_checked(self, state):
+        """Add debugging tab. Currently not fully implemented"""
         if(state == QtCore.Qt.Checked):
             self.debug_tab = DebugWidget(self)
             self.tabs.insertTab(0, self.debug_tab, "Debug")
@@ -252,6 +268,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.debug_tab = None
 
     def timer_timeout(self):
+        """Update gui with live instrument information"""
         tabfns = {self.tabs.tabText(n): self.tabs.widget(n).add_sample for n in range(self.tabs.count())}
         if not self.backend.process_samples(tabfns):
             self.record_btn.setChecked(False)
@@ -303,6 +320,13 @@ class DebugWidget(QtGui.QWidget):
         self.run_cmd(cmd)
 
 class ConfigWindow(QtGui.QDialog):
+    """
+    Generic configuration window.
+    
+    Instruments must provide a widget that also implements the methods of
+    ConfigWindow in the instrument module.
+    
+    """
     def __init__(self, config, cfgwidget):
         super(ConfigWindow, self).__init__()
         self.setWindowTitle("Instrument Config")
