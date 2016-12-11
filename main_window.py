@@ -91,19 +91,29 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
+        #Open configuration file menu option
         openAction = QtGui.QAction('&Open config', self)
         openAction.setShortcut('Ctrl+O')
-        openAction.triggered.connect(self.open_folder)
+        openAction.triggered.connect(self.open_config)
+        #Save configuration file menu option
         saveAction = QtGui.QAction('&Save config', self)
         saveAction.setShortcut('Ctrl+S')
-        saveAction.triggered.connect(self.save_folder)
+        saveAction.triggered.connect(self.save_config)
         #TODO remove to enable saving
-        saveAction.setEnabled(False)        
+        saveAction.setEnabled(False)
+        #Reload configuration file menu option. Disabled at startup
+        self.reloadAction = QtGui.QAction('&Reload config', self)
+        self.reloadAction.setShortcut('Ctrl+R')
+        self.reloadAction.triggered.connect(self.reload_config)
+        self.reloadAction.setEnabled(False)
+        #Close menu option
         closeAction = QtGui.QAction('Close', self)
         closeAction.setShortcut('Ctrl+Q')
         closeAction.triggered.connect(self.close)
+        #Add all actions to file menu
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
+        fileMenu.addAction(self.reloadAction)
         fileMenu.addAction(closeAction)
 
     def _layout_controls(self):
@@ -164,16 +174,29 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.run_btn.setEnabled(True)
         self.edit_samples.setEnabled(True)
         self.record_duration.setEnabled(True)
+        self.reloadAction.setEnabled(True)
         
 
-    def open_folder(self):
+    def open_config(self):
         cfgfile = str(QtGui.QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)"))
-        self.backend.load_configfile(cfgfile)
-        self.enable_config_widgets()
-        self.update_gui()
+        try:
+            self.backend.load_configfile(cfgfile)
+            self.enable_config_widgets()
+            self.update_gui()
+        except (FileNotFoundError, ValueError) as err:
+            msg = QtGui.QErrorMessage()
+            msg.setWindowTitle("Config File Error")
+            msg.showMessage(str(err))
+            msg.exec_()
+            
 
-    def save_folder(self):
+    def save_config(self):
         self.backend.save_configfile()
+        
+    def reload_config(self):
+        cfgfile = self.backend.configfile
+        self.backend.load_configfile(cfgfile)
+        self.update_gui()
 
     def add_inst_btn_clicked(self):
         """Add instrument button click handler"""
