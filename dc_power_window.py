@@ -17,7 +17,6 @@ class DCWidget(QtGui.QWidget, DataWindow):
         self.trigger_btn.clicked.connect(self.trigger_btn_clicked)
         self.record_trigger = QtGui.QCheckBox("Trigger on record")
         self.record_trigger.stateChanged.connect(self.record_trigger_changed)
-        self.setEnabled(False)
 
     def _layout_controls(self):
         vbox = QtGui.QVBoxLayout()
@@ -27,16 +26,7 @@ class DCWidget(QtGui.QWidget, DataWindow):
         self.setLayout(vbox)
 
     def start(self):
-        cfg = self.instrument.cfg
-        self.record_trigger.setChecked(cfg.record_trigger)
-        #self.trigger_btn.setEnabled(True)
-        #self.record_trigger.setEnabled(True)
-        self.setEnabled(True)
-
-    def stop(self):
-        #self.trigger_btn.setEnabled(False)
-        #self.record_trigger.setEnabled(False)
-        self.setEnabled(False)
+        self.record_trigger.setChecked(self.instrument.cfg.record_trigger)
 
     def add_sample(self, time, sample):
         pass
