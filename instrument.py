@@ -121,8 +121,17 @@ class DataWindow(object):
     def __init__(self):
         self.instrument = None
         
-    def configure(self, config):
+    def start(self, config, inst):
         """Override this to configure the window"""
+        pass
+        
+    def stop(self):
+        """
+        Override this to set window back to stopped state
+        
+        This is where you should disable any controls that should not be modified
+        whilst the instrument is not running
+        """
         pass
 
     def add_sample(self, time, sample):

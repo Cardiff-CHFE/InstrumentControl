@@ -17,7 +17,7 @@ class DCWidget(QtGui.QWidget, DataWindow):
     def _layout_controls(self):
         pass
 
-    def configure(self, config):
+    def start(self, config, inst):
         pass
 
     def add_sample(self, time, sample):
