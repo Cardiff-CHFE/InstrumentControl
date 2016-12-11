@@ -252,13 +252,16 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.timer.start(500)
             for n in range(self.tabs.count()):
                 name = self.tabs.tabText(n)
-                self.tabs.widget(n).instrument = self.backend.instruments[name]
-                self.tabs.widget(n).configure(self.backend.config["instruments"][name])
+                inst = self.backend.instruments[name]
+                #TODO: Configure using the instrument config instead of backend config
+                self.tabs.widget(n).start(self.backend.config["instruments"][name], inst)
             self.record_btn.setEnabled(True)
         else:
             self.backend.stop()
             self.timer.stop()
             self.record_btn.setEnabled(False)
+            for n in range(self.tabs.count()):
+                self.tabs.widget(n).stop()
 
     def sample_number_changed(self, val):
         self.sample_text.setText(self.backend.config["samples"][val-1])
