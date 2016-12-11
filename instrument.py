@@ -104,6 +104,14 @@ class Instrument(object):
                 break
         return results
         
+    def on_record_start(self):
+        """Called when datalogging has started"""
+        pass
+        
+    def on_record_stop(self):
+        """Called when datalogging has stopped"""
+        pass
+        
 def runlater(func):
     def func_wrapper(self, *args, **kwargs):
         self.runcmd(lambda self: func(self, *args, **kwargs))

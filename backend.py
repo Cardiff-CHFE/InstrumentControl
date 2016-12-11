@@ -86,10 +86,14 @@ class Backend(object):
         self.logging = True
         if self.config["record_duration"] > 0.0:
             self.log_start = time.time()
+        for inst in self.instruments.values():
+            inst.on_record_start()
 
     def stop_logging(self):
         self.logging = False
         self.data_logger.close_files()
+        for inst in self.instruments.values():
+            inst.on_record_stop()
 
     def process_samples(self, fns):
         for name, inst in self.instruments.items():
