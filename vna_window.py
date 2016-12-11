@@ -7,8 +7,9 @@ from vna import lorentz_fn
 from instrument import DataWindow, ConfigWindow
 
 class VNAWidget(QtGui.QWidget, DataWindow):
-    def __init__(self):
+    def __init__(self, inst):
         super().__init__()
+        self.instrument = inst
         self._create_controls()
         self._layout_controls()
 
@@ -46,18 +47,18 @@ class VNAWidget(QtGui.QWidget, DataWindow):
 
         self.zero_btn = QtGui.QPushButton("Zero offset")
         self.zero_btn.clicked.connect(self.zero_btn_clicked)
-        
+
         self.bw_override = QtGui.QCheckBox("Bandwidth factor override")
         self.bw_override.stateChanged.connect(self.bw_override_changed)
-        
+
         self.bw_factor = QtGui.QDoubleSpinBox()
         self.bw_factor.setRange(1.5, 1000)
         self.bw_factor.valueChanged.connect(self.bw_factor_changed)
-        
+
         self.track_enable = QtGui.QCheckBox("Enable Tracking")
         self.track_enable.setChecked(True)
         self.track_enable.stateChanged.connect(self.track_enable_changed)
-        
+
         self.reset_tracking = QtGui.QPushButton("Reset Tracking")
         self.reset_tracking.clicked.connect(self.reset_tracking_pressed)
 
@@ -103,21 +104,20 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.sample_roll = 0;
         self.sample_n = 0;
 
-    def start(self, config, inst):
-        self.instrument = inst
+    def start(self, config):
         self.set_channel_count(len(config["segments"]))
         self.segment_list.clear()
-        
+
         # Create list of segments sorted by frequency. This is to match
         # the ordering in the recorded samples.
         segments = []
         for n, s in config["segments"].items():
             segments.append((n, s["f0"]))
         segments.sort(key=lambda seg: seg[1])
-        
+
         seg_headings = [s[0] for s in segments]
         self.segment_list.setRowCount(len(seg_headings))
-        self.segment_list.setColumnCount(4)        
+        self.segment_list.setColumnCount(4)
         self.segment_list.setVerticalHeaderLabels(seg_headings)
         self.segment_list.setHorizontalHeaderLabels(["Enabled", "F0 (GHz)", "Q factor", "Insertion loss (dB)"])
         for row, item in enumerate(seg_headings):
@@ -135,7 +135,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         qfac = np.array(sample.q, dtype=np.float)
         self.raw_ampl = sample.ampl
         self.raw_freq = sample.freq
-        
+
         self.freq_queue[:,self.sample_roll] = freq
         self.qfac_queue[:,self.sample_roll] = qfac
 
@@ -154,7 +154,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         for i in range(self.f_offset.size):
             self.freq_plotdata[i].setData(sample_queue, freq_queue[i]-self.f_offset[i])
             self.qfac_plotdata[i].setData(sample_queue, qfac_queue[i]-self.q_offset[i])
-                
+
 
         if self.last_sample:
             for row, f in enumerate(self.last_sample.f0):
@@ -176,28 +176,28 @@ class VNAWidget(QtGui.QWidget, DataWindow):
             # span = np.linspace(minf,maxf,100)
             # ampl = 20*np.log10(lorentz_fn(span,f0,f0/q,10**(il/20)))
             # self.track_plotdata_calc.setData(span,ampl)
-            
+
     def bw_override_changed(self, state):
         if state == QtCore.Qt.Checked:
             self.instrument.set_bw_factor_override(self.bw_factor.value())
         else:
             self.instrument.set_bw_factor_override(None)
-            
+
     def bw_factor_changed(self, val):
         if self.bw_override.checkState() == QtCore.Qt.Checked:
             self.instrument.set_bw_factor_override(val)
-            
+
     def track_enable_changed(self, state):
         self.instrument.set_tracking_override(state == QtCore.Qt.Checked)
         self.bw_override.setEnabled(state == QtCore.Qt.Checked)
-            
+
     def segment_list_clicked(self, tableItem):
         if self.segment_list.column(tableItem) == 0:
             row = self.segment_list.row(tableItem)
             checked = tableItem.checkState() == QtCore.Qt.Checked
             print("row {} is {}".format(row, "checked" if checked else "unchecked"))
             self.instrument.set_segment_enabled(row, checked)
-            
+
     def reset_tracking_pressed(self):
         self.instrument.reset_tracking()
 
@@ -216,14 +216,14 @@ class VNAConfigWindow(QtGui.QTabWidget, ConfigWindow):
         self.addTab(self.general_tab, "General")
         self.addTab(self.modes_tab, "Modes")
         self.addTab(self.calculations_tab, "Calculations")
-        
+
     def load_config(self, config):
         self.config = config
         self.modes_tab.load_modes(self.config["segments"])
-        
+
     def get_config(self):
         return self.config
-        
+
 class VNAModesWidget(QtGui.QWidget):
     def __init__(self):
         super().__init__()
@@ -249,19 +249,19 @@ class VNAModesWidget(QtGui.QWidget):
         self.span_spinbox.setRange(0.0, 100000.0)
         self.span_spinbox.setDecimals(3)
         self.span_spinbox.valueChanged.connect(self.span_spinbox_changed)
-        
+
     def _layout_controls(self):
         hbox = QtGui.QHBoxLayout()
-        
+
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.mode_list)
         ihbox = QtGui.QHBoxLayout()
         ihbox.addWidget(self.add_mode_btn)
         ihbox.addWidget(self.remove_mode_btn)
         ihbox.addWidget(self.load_mode_btn)
-        vbox.addLayout(ihbox)        
+        vbox.addLayout(ihbox)
         hbox.addLayout(vbox)
-        
+
         groupBox = QtGui.QGroupBox("Mode settings")
         ivbox = QtGui.QVBoxLayout()
         ivbox.addWidget(QtGui.QLabel("Mode name"))
@@ -269,14 +269,14 @@ class VNAModesWidget(QtGui.QWidget):
         ivbox.addWidget(QtGui.QLabel("Frequency (GHz)"))
         ivbox.addWidget(self.f0_spinbox)
         ivbox.addWidget(QtGui.QLabel("Span (KHz)"))
-        ivbox.addWidget(self.span_spinbox)  
+        ivbox.addWidget(self.span_spinbox)
         ivbox.addStretch(1.0)
-        
+
         groupBox.setLayout(ivbox)
         hbox.addWidget(groupBox)
-        
+
         self.setLayout(hbox)
-        
+
     def load_modes(self, modes):
         self.modes = modes
         self.mode_list.clear()
@@ -284,25 +284,25 @@ class VNAModesWidget(QtGui.QWidget):
         self.mode_name_txt.setEnabled(False)
         self.f0_spinbox.setEnabled(False)
         self.span_spinbox.setEnabled(False)
-        
-        
+
+
     def list_item_changed(self, current, previous):
         if current:
             self.mode_name_txt.setEnabled(True)
             self.f0_spinbox.setEnabled(True)
             self.span_spinbox.setEnabled(True)
-            
+
             text = current.text()
             self.mode_name_txt.setText(text)
             self.f0_spinbox.setValue(self.modes[text]["f0"]/1e9)
             self.span_spinbox.setValue(self.modes[text]["span"]/1e3)
-            
+
         else:
             self.mode_name_txt.setEnabled(False)
             self.f0_spinbox.setEnabled(False)
             self.v.setEnabled(False)
-            
-        
+
+
     def add_mode_btn_clicked(self):
         i = 1
         while "Mode {}".format(i) in self.modes.keys():
@@ -317,14 +317,14 @@ class VNAModesWidget(QtGui.QWidget):
             "gnmp": 0.0
         }
         self.mode_list.addItem(modename)
-        
-        
+
+
     def remove_mode_btn_clicked(self):
         pass
-        
+
     def load_mode_btn_clicked(self):
         pass
-        
+
     def mode_name_txt_finish(self):
         newtxt = self.mode_name_txt.text()
         if not newtxt in self.modes.keys():
@@ -334,9 +334,9 @@ class VNAModesWidget(QtGui.QWidget):
             existsErr = QtGui.QErrorMessage()
             existsErr.showMessage("Mode with the same name already exists")
             self.mode_name_txt.setText(self.mode_list.currentItem().text())
-            
+
     def f0_spinbox_changed(self, val):
         self.modes[self.mode_list.currentItem().text()]["f0"] = val*1e9
-        
+
     def span_spinbox_changed(self, val):
         self.modes[self.mode_list.currentItem().text()]["span"] = val*1e3

@@ -6,8 +6,9 @@ import numpy as np
 from instrument import DataWindow, ConfigWindow
 
 class DCWidget(QtGui.QWidget, DataWindow):
-    def __init__(self):
+    def __init__(self, inst):
         super().__init__()
+        self.instrument = inst
         self._create_controls()
         self._layout_controls()
 
@@ -25,14 +26,13 @@ class DCWidget(QtGui.QWidget, DataWindow):
         vbox.addStretch()
         self.setLayout(vbox)
 
-    def start(self, config, inst):
-        self.instrument = inst
+    def start(self, config):
         cfg = self.instrument.cfg
         self.record_trigger.setChecked(cfg.record_trigger)
         #self.trigger_btn.setEnabled(True)
         #self.record_trigger.setEnabled(True)
         self.setEnabled(True)
-        
+
     def stop(self):
         #self.trigger_btn.setEnabled(False)
         #self.record_trigger.setEnabled(False)
@@ -43,10 +43,10 @@ class DCWidget(QtGui.QWidget, DataWindow):
 
     def refresh(self):
         pass
-        
+
     def trigger_btn_clicked(self):
         self.instrument.trigger()
-        
+
     def record_trigger_changed(self, state):
         self.instrument.cfg.record_trigger = state
 
@@ -64,6 +64,6 @@ class DCConfigWindow(QtGui.QWidget, ConfigWindow):
 
     def load_config(self, config):
         pass
-        
+
     def get_config(self):
         pass

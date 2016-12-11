@@ -90,7 +90,7 @@ class Instrument(object):
         """Stop the acquire loop"""
         self.running = False
         self.thread.join()
-        
+
     def runcmd(self, command):
         self.commandqueue.put(command)
 
@@ -103,32 +103,30 @@ class Instrument(object):
             except queue.Empty:
                 break
         return results
-        
+
     def on_record_start(self):
         """Called when datalogging has started"""
         pass
-        
+
     def on_record_stop(self):
         """Called when datalogging has stopped"""
         pass
-        
+
 def runlater(func):
     def func_wrapper(self, *args, **kwargs):
         self.runcmd(lambda self: func(self, *args, **kwargs))
     return func_wrapper
 
 class DataWindow(object):
-    def __init__(self):
-        self.instrument = None
-        
-    def start(self, config, inst):
+
+    def start(self, config):
         """Override this to configure the window"""
         pass
-        
+
     def stop(self):
         """
         Override this to set window back to stopped state
-        
+
         This is where you should disable any controls that should not be modified
         whilst the instrument is not running
         """
@@ -146,7 +144,7 @@ class ConfigWindow(object):
     def load_config(self, config):
         """Override this to update the window with the provided configuration"""
         pass
-        
+
     def get_config(self):
         """Override this to return the current configuration"""
         pass
