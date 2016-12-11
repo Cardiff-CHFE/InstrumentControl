@@ -105,22 +105,15 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.sample_n = 0;
 
     def start(self, config):
-        self.set_channel_count(len(config["segments"]))
+        cfg = self.instrument.cfg
+        self.set_channel_count(len(cfg.segments))
         self.segment_list.clear()
 
-        # Create list of segments sorted by frequency. This is to match
-        # the ordering in the recorded samples.
-        segments = []
-        for n, s in config["segments"].items():
-            segments.append((n, s["f0"]))
-        segments.sort(key=lambda seg: seg[1])
-
-        seg_headings = [s[0] for s in segments]
-        self.segment_list.setRowCount(len(seg_headings))
+        self.segment_list.setRowCount(len(cfg.segments))
         self.segment_list.setColumnCount(4)
-        self.segment_list.setVerticalHeaderLabels(seg_headings)
+        self.segment_list.setVerticalHeaderLabels([s.name for s in cfg.segments])
         self.segment_list.setHorizontalHeaderLabels(["Enabled", "F0 (GHz)", "Q factor", "Insertion loss (dB)"])
-        for row, item in enumerate(seg_headings):
+        for row in range(len(cfg.segments)):
             checkbox = QtGui.QTableWidgetItem()
             checkbox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             checkbox.setCheckState(QtCore.Qt.Checked)
