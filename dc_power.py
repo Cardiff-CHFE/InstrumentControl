@@ -5,6 +5,7 @@ import math
 import time
 import copy
 from collections import deque
+import threading
 
 class DCPower(Instrument):
     def __init__(self, resource):
@@ -23,14 +24,33 @@ class DCPower(Instrument):
         self.voltages = [0]*len(self.cfg.channels)
         self.currents = [0]*len(self.cfg.channels)
         self.output = False
+        self.command_id = 0
+        self.trigger_event = threading.Event()
+        if self.cfg.start_trigger:
+            self.trigger()
 
     def sample(self, elapsed):
-        if len(self.cfg.commands):
-            cmd = self.cfg.commands.popleft()
-            cmd.run(self)
+        if self.running:
+            #Wait for external trigger. Trigger will persist until it is cleared
+            self.trigger_event.wait()
+            if not self.running:
+                return None
+            self.cfg.commands[self.command_id].run(self)
+            self.command_id+=1
+                
+            if self.command_id >= len(self.cfg.commands):
+                self.command_id=0
+                #Clear trigger ready for next trigger
+                self.trigger_event.clear()
+            return [self.voltages, self.currents, self.output]
         else:
-            time.sleep(1.0)
-        return [self.voltages, self.currents, self.output]
+            return None
+        
+    def stop(self):
+        """Stop the acquire loop"""
+        self.running = False
+        self.trigger()
+        self.thread.join()
 
     def cleanup(self):
         self.res.write(":OUTP:STAT {}", onoff(False))
@@ -64,14 +84,22 @@ class DCPower(Instrument):
     def set_output(self, state):
         self.res.write(":OUTP {}", onoff(state))
         self.output = state
+        
+    def trigger(self):
+        self.trigger_event.set()
+        
+    def on_record_start(self):
+        if self.cfg.record_trigger:
+            self.trigger()
 
 
 class DCConfig(object):
     def __init__(self, config):
         self.channels = config["channels"]
-
+        self.record_trigger = config["record_trigger"] if "record_trigger" in config else False
+        self.start_trigger = config["start_trigger"] if "start_trigger" in config else False
         cmds = copy.deepcopy(config["commands"])
-        self.commands = deque()
+        self.commands = []
         for cmd in cmds:
             action = cmd["cmd"]
             del cmd["cmd"]
