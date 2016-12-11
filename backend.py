@@ -21,11 +21,8 @@ class Backend(object):
     def load_configfile(self, cfile):
         self.datadir = os.path.dirname(cfile)
         self.configfile = cfile
-        try:
-            with open(cfile) as fp:
-                self.load_config(fp)
-        except FileNotFoundError:
-            pass
+        with open(cfile) as fp:
+            self.load_config(fp)
         if not "instruments" in self.config:
             self.config["instruments"] = {}
         if not "record_duration" in self.config:
