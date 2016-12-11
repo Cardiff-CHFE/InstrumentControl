@@ -222,10 +222,7 @@ class ApplicationWindow(QtGui.QMainWindow):
     def update_gui(self):
         """Resets the user interface with the new configuration"""
         self.instrument_list.clear()
-        self.instrument_list.addItems(list(self.backend.config["instruments"].keys()))
-        self.tabs.clear()
-        for name, inst in self.backend.config["instruments"].items():
-            self.tabs.addTab(self.inst_widgets[inst["type"]](), name)
+        self.instrument_list.addItems(list(self.backend.config["instruments"].keys()))                
         if "samples" in self.backend.config and len(self.backend.config["samples"]) > 0:
             self.sample_number.setMaximum(len(self.backend.config["samples"]))
             self.sample_number.setEnabled(True)
@@ -249,12 +246,16 @@ class ApplicationWindow(QtGui.QMainWindow):
         if running:
             self.backend.load_instruments()
             self.backend.start()
-            self.timer.start(500)
-            for n in range(self.tabs.count()):
-                name = self.tabs.tabText(n)
-                inst = self.backend.instruments[name]
+            for name, inst in self.backend.config["instruments"].items():
+                widget = self.inst_widgets[inst["type"]]()
+                self.tabs.addTab(widget, name)
                 #TODO: Configure using the instrument config instead of backend config
-                self.tabs.widget(n).start(self.backend.config["instruments"][name], inst)
+                widget.start(
+                    self.backend.config["instruments"][name],
+                    self.backend.instruments[name])
+                
+            
+            self.timer.start(500)
             self.record_btn.setEnabled(True)
         else:
             self.backend.stop()
@@ -262,6 +263,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.record_btn.setEnabled(False)
             for n in range(self.tabs.count()):
                 self.tabs.widget(n).stop()
+            self.tabs.clear()
 
     def sample_number_changed(self, val):
         self.sample_text.setText(self.backend.config["samples"][val-1])
