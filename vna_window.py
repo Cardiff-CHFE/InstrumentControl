@@ -104,7 +104,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.sample_roll = 0;
         self.sample_n = 0;
 
-    def start(self, config):
+    def start(self):
         cfg = self.instrument.cfg
         self.set_channel_count(len(cfg.segments))
         self.segment_list.clear()

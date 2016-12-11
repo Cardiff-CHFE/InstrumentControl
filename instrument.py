@@ -119,16 +119,19 @@ def runlater(func):
 
 class DataWindow(object):
 
-    def start(self, config):
-        """Override this to configure the window"""
+    def start(self):
+        """
+        Override this to finish configuration
+
+        This is called after the widget has been added to a Window/Tab.
+        """
         pass
 
     def stop(self):
         """
         Override this to set window back to stopped state
 
-        This is where you should disable any controls that should not be modified
-        whilst the instrument is not running
+        This is called before the window/tab containing this widget is removed.
         """
         pass
 

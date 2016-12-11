@@ -26,7 +26,7 @@ class DCWidget(QtGui.QWidget, DataWindow):
         vbox.addStretch()
         self.setLayout(vbox)
 
-    def start(self, config):
+    def start(self):
         cfg = self.instrument.cfg
         self.record_trigger.setChecked(cfg.record_trigger)
         #self.trigger_btn.setEnabled(True)

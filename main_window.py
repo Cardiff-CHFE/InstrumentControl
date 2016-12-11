@@ -250,8 +250,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                 inst = self.backend.instruments[name]
                 widget = self.inst_widgets[inst["type"]](inst)
                 self.tabs.addTab(widget, name)
-                #TODO: Configure using the instrument config instead of backend config
-                widget.start(self.backend.config["instruments"][name])
+                widget.start()
 
 
             self.timer.start(500)
