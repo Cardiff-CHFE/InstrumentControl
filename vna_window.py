@@ -26,8 +26,8 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.q_offset = None
         self.sample_queue = None
         self.colours = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
-        self.sample_roll = 0;
-        self.sample_n = 0;
+        self.sample_roll = 0
+        self.sample_n = 0
 
     def _create_controls(self):
         self.graph = pg.GraphicsLayoutWidget()
