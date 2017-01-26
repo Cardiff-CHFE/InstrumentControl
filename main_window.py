@@ -246,9 +246,9 @@ class ApplicationWindow(QtGui.QMainWindow):
         if running:
             self.backend.load_instruments()
             self.backend.start()
-            for name, inst in self.backend.config["instruments"].items():
+            for name, icfg in self.backend.config["instruments"].items():
                 inst = self.backend.instruments[name]
-                widget = self.inst_widgets[inst["type"]](inst)
+                widget = self.inst_widgets[icfg["type"]](inst)
                 self.tabs.addTab(widget, name)
                 widget.start()
 
