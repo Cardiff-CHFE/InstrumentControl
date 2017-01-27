@@ -229,7 +229,7 @@ class VNA(Instrument):
         self.cfg.track_enabled = enabled
         
     @runlater
-    def reset_tracking(self):
+    def reset_segments(self):
         for segment in self.cfg.segments:
             segment.f0 = segment.f0_default
             segment.span = segment.span_default

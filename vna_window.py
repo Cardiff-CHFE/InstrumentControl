@@ -59,8 +59,8 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.track_enable.setChecked(True)
         self.track_enable.stateChanged.connect(self.track_enable_changed)
 
-        self.reset_tracking = QtGui.QPushButton("Reset Tracking")
-        self.reset_tracking.clicked.connect(self.reset_tracking_pressed)
+        self.reset_segments = QtGui.QPushButton("Reset Segments")
+        self.reset_segments.clicked.connect(self.reset_segments_pressed)
 
         self.segment_list = QtGui.QTableWidget()
         self.segment_list.itemClicked.connect(self.segment_list_clicked)
@@ -191,8 +191,8 @@ class VNAWidget(QtGui.QWidget, DataWindow):
             print("row {} is {}".format(row, "checked" if checked else "unchecked"))
             self.instrument.set_segment_enabled(row, checked)
 
-    def reset_tracking_pressed(self):
-        self.instrument.reset_tracking()
+    def reset_segments_pressed(self):
+        self.instrument.reset_segments()
 
 class VNAConfigWindow(QtGui.QTabWidget, ConfigWindow):
     def __init__(self):
