@@ -62,6 +62,9 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.reset_segments = QtGui.QPushButton("Reset Segments")
         self.reset_segments.clicked.connect(self.reset_segments_pressed)
 
+        self.force_retrack = QtGui.QPushButton("Force Retrack")
+        self.force_retrack.clicked.connect(self.force_retrack_pressed)
+
         self.segment_list = QtGui.QTableWidget()
         self.segment_list.itemClicked.connect(self.segment_list_clicked)
 
@@ -77,6 +80,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         vbox.addWidget(self.bw_factor)
         vbox.addWidget(self.track_enable)
         vbox.addWidget(self.reset_tracking)
+        vbox.addWidget(self.force_retrack)
         vbox.addWidget(self.segment_list)
         vbox.addStretch()
         hbox.addLayout(vbox, 2)
@@ -193,6 +197,9 @@ class VNAWidget(QtGui.QWidget, DataWindow):
 
     def reset_segments_pressed(self):
         self.instrument.reset_segments()
+
+    def force_retrack_pressed(self):
+        self.instrument.force_retrack()
 
 class VNAConfigWindow(QtGui.QTabWidget, ConfigWindow):
     def __init__(self):

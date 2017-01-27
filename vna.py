@@ -13,6 +13,7 @@ class VNA(Instrument):
     def __init__(self, resource):
         super().__init__()
         self.res = scpi.Wrapper(resource)
+        self.forced_retrack = False
 
     @staticmethod
     def match_device(devname):
@@ -128,20 +129,22 @@ class VNA(Instrument):
                     self.set_segments(self.cfg.segments)
                 return None
 
-        if (self.cfg.track_freq or self.cfg.track_span) and self.cfg.track_enabled:
+        tracking_enabled = self.cfg.track_freq or self.cfg.track_span
+        if tracking_enabled and (self.cfg.track_enabled or self.forced_retrack):
             retracked = False
             for seg, f0, bw in zip(self.cfg.segments, data.f0, data.bw):
                 if not seg.enabled:
                     continue
                 trackf, tracks = track_window(seg.f0, seg.span, f0, bw,
                                               bw_factor=self.cfg.get_bw_factor())
-                if (trackf and self.cfg.track_freq) or (tracks and self.cfg.track_span):
+                if (trackf and self.cfg.track_freq) or (tracks and self.cfg.track_span) or self.forced_retrack:
                     retracked = True
                     if self.cfg.track_freq:
                         seg.f0 = f0
                     if self.cfg.track_span:
                         seg.span = bw*self.cfg.get_bw_factor()
             if retracked:
+                self.forced_retrack = False
                 self.set_segments(self.cfg.segments)
                 if self.cfg.use_markers:
                     # Force complete trigger
@@ -234,6 +237,10 @@ class VNA(Instrument):
             segment.f0 = segment.f0_default
             segment.span = segment.span_default
         self.set_segments(self.cfg.segments)
+
+    @runlater
+    def force_retrack(self):
+        self.forced_retrack = True
 
 class VNAConfig(object):
     def __init__(self, config):
