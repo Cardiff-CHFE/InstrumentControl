@@ -79,7 +79,7 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         vbox.addWidget(self.bw_override)
         vbox.addWidget(self.bw_factor)
         vbox.addWidget(self.track_enable)
-        vbox.addWidget(self.reset_tracking)
+        vbox.addWidget(self.reset_segments)
         vbox.addWidget(self.force_retrack)
         vbox.addWidget(self.segment_list)
         vbox.addStretch()
