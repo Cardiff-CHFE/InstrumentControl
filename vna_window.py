@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 from collections import deque
 import pyqtgraph as pg
@@ -6,7 +6,7 @@ import numpy as np
 from vna import lorentz_fn
 from instrument import DataWindow, ConfigWindow
 
-class VNAWidget(QtGui.QWidget, DataWindow):
+class VNAWidget(QtWidgets.QWidget, DataWindow):
     def __init__(self, inst):
         super().__init__()
         self.instrument = inst
@@ -45,36 +45,36 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         # self.track_plotdata = self.track_plot.plot(pen="m")
         # self.track_plotdata_calc = self.track_plot.plot(pen="c")
 
-        self.zero_btn = QtGui.QPushButton("Zero offset")
+        self.zero_btn = QtWidgets.QPushButton("Zero offset")
         self.zero_btn.clicked.connect(self.zero_btn_clicked)
 
-        self.bw_override = QtGui.QCheckBox("Bandwidth factor override")
+        self.bw_override = QtWidgets.QCheckBox("Bandwidth factor override")
         self.bw_override.stateChanged.connect(self.bw_override_changed)
 
-        self.bw_factor = QtGui.QDoubleSpinBox()
+        self.bw_factor = QtWidgets.QDoubleSpinBox()
         self.bw_factor.setRange(1.5, 1000)
         self.bw_factor.valueChanged.connect(self.bw_factor_changed)
 
-        self.track_enable = QtGui.QCheckBox("Enable Tracking")
+        self.track_enable = QtWidgets.QCheckBox("Enable Tracking")
         self.track_enable.setChecked(True)
         self.track_enable.stateChanged.connect(self.track_enable_changed)
 
-        self.reset_segments = QtGui.QPushButton("Reset Segments")
+        self.reset_segments = QtWidgets.QPushButton("Reset Segments")
         self.reset_segments.clicked.connect(self.reset_segments_pressed)
 
-        self.force_retrack = QtGui.QPushButton("Force Retrack")
+        self.force_retrack = QtWidgets.QPushButton("Force Retrack")
         self.force_retrack.clicked.connect(self.force_retrack_pressed)
 
-        self.segment_list = QtGui.QTableWidget()
+        self.segment_list = QtWidgets.QTableWidget()
         self.segment_list.itemClicked.connect(self.segment_list_clicked)
 
     def _layout_controls(self):
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.graph, 8)
         self.graph.addItem(self.freq_plot, 0,0)
         self.graph.addItem(self.qfac_plot, 1,0)
         # self.graph.addItem(self.track_plot, 0,1,2,1)
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.zero_btn)
         vbox.addWidget(self.bw_override)
         vbox.addWidget(self.bw_factor)
@@ -118,12 +118,12 @@ class VNAWidget(QtGui.QWidget, DataWindow):
         self.segment_list.setVerticalHeaderLabels([s.name for s in cfg.segments])
         self.segment_list.setHorizontalHeaderLabels(["Enabled", "F0 (GHz)", "Q factor", "Insertion loss (dB)"])
         for row in range(len(cfg.segments)):
-            checkbox = QtGui.QTableWidgetItem()
+            checkbox = QtWidgets.QTableWidgetItem()
             checkbox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             checkbox.setCheckState(QtCore.Qt.Checked)
             self.segment_list.setItem(row, 0, checkbox)
             for col in range(3):
-                self.segment_list.setItem(row, col+1, QtGui.QTableWidgetItem("0.0"))
+                self.segment_list.setItem(row, col+1, QtWidgets.QTableWidgetItem("0.0"))
         self.segment_list.resizeColumnsToContents()
         self.segment_list.resizeRowsToContents()
 
@@ -201,16 +201,16 @@ class VNAWidget(QtGui.QWidget, DataWindow):
     def force_retrack_pressed(self):
         self.instrument.force_retrack()
 
-class VNAConfigWindow(QtGui.QTabWidget, ConfigWindow):
+class VNAConfigWindow(QtWidgets.QTabWidget, ConfigWindow):
     def __init__(self):
         super().__init__()
         self._create_controls()
         self._layout_controls()
 
     def _create_controls(self):
-        self.general_tab = QtGui.QWidget()
+        self.general_tab = QtWidgets.QWidget()
         self.modes_tab = VNAModesWidget()
-        self.calculations_tab = QtGui.QWidget()
+        self.calculations_tab = QtWidgets.QWidget()
 
     def _layout_controls(self):
         self.addTab(self.general_tab, "General")
@@ -224,51 +224,51 @@ class VNAConfigWindow(QtGui.QTabWidget, ConfigWindow):
     def get_config(self):
         return self.config
 
-class VNAModesWidget(QtGui.QWidget):
+class VNAModesWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self._create_controls()
         self._layout_controls()
 
     def _create_controls(self):
-        self.mode_list = QtGui.QListWidget()
+        self.mode_list = QtWidgets.QListWidget()
         self.mode_list.currentItemChanged.connect(self.list_item_changed)
-        self.add_mode_btn = QtGui.QPushButton("Add")
+        self.add_mode_btn = QtWidgets.QPushButton("Add")
         self.add_mode_btn.clicked.connect(self.add_mode_btn_clicked)
-        self.remove_mode_btn = QtGui.QPushButton("Remove")
+        self.remove_mode_btn = QtWidgets.QPushButton("Remove")
         self.remove_mode_btn.clicked.connect(self.remove_mode_btn_clicked)
-        self.load_mode_btn = QtGui.QPushButton("Load")
+        self.load_mode_btn = QtWidgets.QPushButton("Load")
         self.load_mode_btn.clicked.connect(self.load_mode_btn_clicked)
-        self.mode_name_txt = QtGui.QLineEdit()
+        self.mode_name_txt = QtWidgets.QLineEdit()
         self.mode_name_txt.editingFinished.connect(self.mode_name_txt_finish)
-        self.f0_spinbox = QtGui.QDoubleSpinBox()
+        self.f0_spinbox = QtWidgets.QDoubleSpinBox()
         self.f0_spinbox.setRange(0.0, 99.0)
         self.f0_spinbox.setDecimals(5)
         self.f0_spinbox.valueChanged.connect(self.f0_spinbox_changed)
-        self.span_spinbox = QtGui.QDoubleSpinBox()
+        self.span_spinbox = QtWidgets.QDoubleSpinBox()
         self.span_spinbox.setRange(0.0, 100000.0)
         self.span_spinbox.setDecimals(3)
         self.span_spinbox.valueChanged.connect(self.span_spinbox_changed)
 
     def _layout_controls(self):
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.mode_list)
-        ihbox = QtGui.QHBoxLayout()
+        ihbox = QtWidgets.QHBoxLayout()
         ihbox.addWidget(self.add_mode_btn)
         ihbox.addWidget(self.remove_mode_btn)
         ihbox.addWidget(self.load_mode_btn)
         vbox.addLayout(ihbox)
         hbox.addLayout(vbox)
 
-        groupBox = QtGui.QGroupBox("Mode settings")
-        ivbox = QtGui.QVBoxLayout()
-        ivbox.addWidget(QtGui.QLabel("Mode name"))
+        groupBox = QtWidgets.QGroupBox("Mode settings")
+        ivbox = QtWidgets.QVBoxLayout()
+        ivbox.addWidget(QtWidgets.QLabel("Mode name"))
         ivbox.addWidget(self.mode_name_txt)
-        ivbox.addWidget(QtGui.QLabel("Frequency (GHz)"))
+        ivbox.addWidget(QtWidgets.QLabel("Frequency (GHz)"))
         ivbox.addWidget(self.f0_spinbox)
-        ivbox.addWidget(QtGui.QLabel("Span (KHz)"))
+        ivbox.addWidget(QtWidgets.QLabel("Span (KHz)"))
         ivbox.addWidget(self.span_spinbox)
         ivbox.addStretch(1.0)
 
@@ -331,7 +331,7 @@ class VNAModesWidget(QtGui.QWidget):
             self.modes[newtxt] = self.modes.pop(self.mode_list.currentItem().text())
             self.mode_list.currentItem().setText(newtxt)
         elif self.mode_list.currentItem().text() != newtxt:
-            existsErr = QtGui.QErrorMessage()
+            existsErr = QtWidgets.QErrorMessage()
             existsErr.showMessage("Mode with the same name already exists")
             self.mode_name_txt.setText(self.mode_list.currentItem().text())
 

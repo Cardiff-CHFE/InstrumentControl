@@ -3,7 +3,7 @@ import traceback
 import os
 import copy
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 import vna
 import dc_power
@@ -12,7 +12,7 @@ from backend import Backend
 from vna_window import VNAWidget, VNAConfigWindow
 from dc_power_window import DCWidget, DCConfigWindow
 
-class ApplicationWindow(QtGui.QMainWindow):
+class ApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(ApplicationWindow, self).__init__()
         self.setWindowTitle("Instrument Control")
@@ -45,69 +45,69 @@ class ApplicationWindow(QtGui.QMainWindow):
 
     def _create_controls(self):
         """Create all the QT controls"""
-        self.instrument_list = QtGui.QListWidget()
+        self.instrument_list = QtWidgets.QListWidget()
 
-        self.add_inst_btn = QtGui.QPushButton("Add")
+        self.add_inst_btn = QtWidgets.QPushButton("Add")
         self.add_inst_btn.setEnabled(False)
         self.add_inst_btn.clicked.connect(self.add_inst_btn_clicked)
 
-        self.cfg_inst_btn = QtGui.QPushButton("Configure")
+        self.cfg_inst_btn = QtWidgets.QPushButton("Configure")
         self.cfg_inst_btn.setEnabled(False)
         self.cfg_inst_btn.clicked.connect(self.cfg_inst_btn_clicked)
 
-        self.del_inst_btn = QtGui.QPushButton("Delete")
+        self.del_inst_btn = QtWidgets.QPushButton("Delete")
         self.del_inst_btn.setEnabled(False)
         self.del_inst_btn.clicked.connect(self.del_inst_btn_clicked)
 
-        self.run_btn = QtGui.QPushButton("Run experiment")
+        self.run_btn = QtWidgets.QPushButton("Run experiment")
         self.run_btn.setCheckable(True)
         self.run_btn.setEnabled(False)
         self.run_btn.clicked[bool].connect(self.run_btn_clicked)
 
-        self.sample_text = QtGui.QLineEdit()
-        self.record_btn = QtGui.QPushButton("Record data")
+        self.sample_text = QtWidgets.QLineEdit()
+        self.record_btn = QtWidgets.QPushButton("Record data")
         self.record_btn.setCheckable(True)
         self.record_btn.setEnabled(False)
         self.record_btn.clicked[bool].connect(self.record_btn_clicked)
 
-        self.sample_number = QtGui.QSpinBox()
+        self.sample_number = QtWidgets.QSpinBox()
         self.sample_number.setMinimum(1)
         self.sample_number.setEnabled(False)
         self.sample_number.valueChanged.connect(self.sample_number_changed)
 
-        self.edit_samples = QtGui.QPushButton("Edit samples")
+        self.edit_samples = QtWidgets.QPushButton("Edit samples")
         self.edit_samples.setEnabled(False)
         self.edit_samples.clicked.connect(self.edit_samples_btn_clicked)
 
-        self.auto_increment = QtGui.QCheckBox("Auto increment")
+        self.auto_increment = QtWidgets.QCheckBox("Auto increment")
         self.auto_increment.setChecked(True)
 
-        self.record_duration = QtGui.QDoubleSpinBox()
+        self.record_duration = QtWidgets.QDoubleSpinBox()
         self.record_duration.setRange(0, 10000)
         self.record_duration.setEnabled(False)
         self.record_duration.valueChanged.connect(self.record_duration_changed)
 
-        self.tabs = QtGui.QTabWidget()
+        self.tabs = QtWidgets.QTabWidget()
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         #Open configuration file menu option
-        openAction = QtGui.QAction('&Open config', self)
+        openAction = QtWidgets.QAction('&Open config', self)
         openAction.setShortcut('Ctrl+O')
         openAction.triggered.connect(self.open_config)
         #Save configuration file menu option
-        saveAction = QtGui.QAction('&Save config', self)
+        saveAction = QtWidgets.QAction('&Save config', self)
         saveAction.setShortcut('Ctrl+S')
         saveAction.triggered.connect(self.save_config)
         #TODO remove to enable saving
         saveAction.setEnabled(False)
         #Reload configuration file menu option. Disabled at startup
-        self.reloadAction = QtGui.QAction('&Reload config', self)
+        self.reloadAction = QtWidgets.QAction('&Reload config', self)
         self.reloadAction.setShortcut('Ctrl+R')
         self.reloadAction.triggered.connect(self.reload_config)
         self.reloadAction.setEnabled(False)
         #Close menu option
-        closeAction = QtGui.QAction('Close', self)
+        closeAction = QtWidgets.QAction('Close', self)
         closeAction.setShortcut('Ctrl+Q')
         closeAction.triggered.connect(self.close)
         #Add all actions to file menu
@@ -118,45 +118,45 @@ class ApplicationWindow(QtGui.QMainWindow):
 
     def _layout_controls(self):
         """Position controls within the window"""
-        vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(QtGui.QLabel("Instruments"))
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(QtWidgets.QLabel("Instruments"))
         vbox.addWidget(self.instrument_list)
-        ihbox = QtGui.QHBoxLayout()
+        ihbox = QtWidgets.QHBoxLayout()
         ihbox.addWidget(self.add_inst_btn)
         ihbox.addWidget(self.cfg_inst_btn)
         ihbox.addWidget(self.del_inst_btn)
         vbox.addLayout(ihbox)
-        hline = QtGui.QFrame()
-        hline.setFrameShape(QtGui.QFrame.HLine)
-        hline.setFrameShadow(QtGui.QFrame.Sunken)
+        hline = QtWidgets.QFrame()
+        hline.setFrameShape(QtWidgets.QFrame.HLine)
+        hline.setFrameShadow(QtWidgets.QFrame.Sunken)
         vbox.addWidget(hline)
         vbox.addWidget(self.run_btn)
-        hline = QtGui.QFrame()
-        hline.setFrameShape(QtGui.QFrame.HLine)
-        hline.setFrameShadow(QtGui.QFrame.Sunken)
+        hline = QtWidgets.QFrame()
+        hline.setFrameShape(QtWidgets.QFrame.HLine)
+        hline.setFrameShadow(QtWidgets.QFrame.Sunken)
         vbox.addWidget(hline)
-        vbox.addWidget(QtGui.QLabel("Record duration in seconds (0=forever):"))
+        vbox.addWidget(QtWidgets.QLabel("Record duration in seconds (0=forever):"))
         vbox.addWidget(self.record_duration)
-        hline = QtGui.QFrame()
-        hline.setFrameShape(QtGui.QFrame.HLine)
-        hline.setFrameShadow(QtGui.QFrame.Sunken)
+        hline = QtWidgets.QFrame()
+        hline.setFrameShape(QtWidgets.QFrame.HLine)
+        hline.setFrameShadow(QtWidgets.QFrame.Sunken)
         vbox.addWidget(hline)
-        vbox.addWidget(QtGui.QLabel("Sample number"))
-        ihbox = QtGui.QHBoxLayout()
+        vbox.addWidget(QtWidgets.QLabel("Sample number"))
+        ihbox = QtWidgets.QHBoxLayout()
         ihbox.addWidget(self.sample_number)
         ihbox.addWidget(self.edit_samples)
         vbox.addLayout(ihbox)
         vbox.addWidget(self.auto_increment)
-        vbox.addWidget(QtGui.QLabel("Sample name"))
+        vbox.addWidget(QtWidgets.QLabel("Sample name"))
         vbox.addWidget(self.sample_text)
         vbox.addWidget(self.record_btn)
 
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(vbox)
         hbox.addWidget(self.tabs, 1.0)
 
-        window = QtGui.QWidget()
+        window = QtWidgets.QWidget()
         window.setLayout(hbox)
 
         self.setCentralWidget(window)
@@ -178,13 +178,13 @@ class ApplicationWindow(QtGui.QMainWindow):
 
 
     def open_config(self):
-        cfgfile = str(QtGui.QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)"))
+        cfgfile, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)")
         try:
             self.backend.load_configfile(cfgfile)
             self.enable_config_widgets()
             self.update_gui()
         except (FileNotFoundError, ValueError) as err:
-            msg = QtGui.QErrorMessage()
+            msg = QtWidgets.QErrorMessage()
             msg.setWindowTitle("Config File Error")
             msg.showMessage(str(err))
             msg.exec_()
@@ -208,7 +208,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         if item is not None:
             cfg = self.backend.config["instruments"][item.text()]
             cfgwnd = ConfigWindow(cfg, self.inst_configs[cfg["type"]]())
-            if cfgwnd.exec_() == QtGui.QDialog.Accepted:
+            if cfgwnd.exec_() == QtWidgets.QDialog.Accepted:
                 self.backend.config["instruments"][item.text()] = cfgwnd.get_config()
 
     def del_inst_btn_clicked(self):
@@ -280,7 +280,7 @@ class ApplicationWindow(QtGui.QMainWindow):
     def edit_samples_btn_clicked(self):
         """Display window to edit list of samples names"""
         editWnd = EditSamplesWindow(self.backend.config["samples"])
-        if editWnd.exec_() == QtGui.QDialog.Accepted:
+        if editWnd.exec_() == QtWidgets.QDialog.Accepted:
             self.backend.config["samples"] = editWnd.get_samples()
             self.update_gui()
 
@@ -308,19 +308,19 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.timer.stop()
 
 
-class DebugWidget(QtGui.QWidget):
+class DebugWidget(QtWidgets.QWidget):
     def __init__(self, app_window):
         super(DebugWidget, self).__init__()
         self.app_window = app_window
         self.locals = {}
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
 
-        self.output_txt = QtGui.QTextEdit()
+        self.output_txt = QtWidgets.QTextEdit()
         self.output_txt.setReadOnly(True)
         vbox.addWidget(self.output_txt)
 
-        self.input_cmd = QtGui.QComboBox()
+        self.input_cmd = QtWidgets.QComboBox()
         self.input_cmd.setEditable(True)
         self.input_cmd.lineEdit().returnPressed.connect(self.input_cmd_return)
         vbox.addWidget(self.input_cmd)
@@ -345,7 +345,7 @@ class DebugWidget(QtGui.QWidget):
         self.input_cmd.setEditText("")
         self.run_cmd(cmd)
 
-class ConfigWindow(QtGui.QDialog):
+class ConfigWindow(QtWidgets.QDialog):
     """
     Generic configuration window.
 
@@ -363,19 +363,19 @@ class ConfigWindow(QtGui.QDialog):
         self._layout_controls()
 
     def _create_controls(self):
-        self.ok = QtGui.QPushButton("Ok")
+        self.ok = QtWidgets.QPushButton("Ok")
         self.ok.clicked.connect(self.accept)
-        self.cancel = QtGui.QPushButton("Cancel")
+        self.cancel = QtWidgets.QPushButton("Cancel")
         self.cancel.clicked.connect(self.reject)
 
     def _layout_controls(self):
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addStretch(1.0)
         hbox.addWidget(self.ok)
         hbox.addWidget(self.cancel)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.cfgwidget, 1.0)
         vbox.addLayout(hbox)
 
@@ -384,7 +384,7 @@ class ConfigWindow(QtGui.QDialog):
     def get_config(self):
         return self.cfgwidget.get_config()
 
-class EditSamplesWindow(QtGui.QDialog):
+class EditSamplesWindow(QtWidgets.QDialog):
     def __init__(self, samples):
         super(EditSamplesWindow, self).__init__()
         self._create_controls()
@@ -393,31 +393,31 @@ class EditSamplesWindow(QtGui.QDialog):
         self.sample_list.addItems(samples)
 
     def _create_controls(self):
-        self.sample_list = QtGui.QListWidget()
+        self.sample_list = QtWidgets.QListWidget()
 
-        self.ok = QtGui.QPushButton("Ok")
+        self.ok = QtWidgets.QPushButton("Ok")
         self.ok.clicked.connect(self.accept)
-        self.cancel = QtGui.QPushButton("Cancel")
+        self.cancel = QtWidgets.QPushButton("Cancel")
         self.cancel.clicked.connect(self.reject)
 
-        self.add_sample_btn = QtGui.QPushButton("Add Sample")
+        self.add_sample_btn = QtWidgets.QPushButton("Add Sample")
         self.add_sample_btn.clicked.connect(self.add_sample_btn_clicked)
-        self.rename_sample_btn = QtGui.QPushButton("Rename Sample")
+        self.rename_sample_btn = QtWidgets.QPushButton("Rename Sample")
         self.rename_sample_btn.clicked.connect(self.rename_sample_btn_clicked)
-        self.remove_sample_btn = QtGui.QPushButton("Remove Sample")
+        self.remove_sample_btn = QtWidgets.QPushButton("Remove Sample")
         self.remove_sample_btn.clicked.connect(self.remove_sample_btn_clicked)
 
-        self.move_up_btn = QtGui.QPushButton("Move sample up")
+        self.move_up_btn = QtWidgets.QPushButton("Move sample up")
         self.move_up_btn.clicked.connect(self.move_up_btn_clicked)
-        self.move_down_btn = QtGui.QPushButton("Move sample down")
+        self.move_down_btn = QtWidgets.QPushButton("Move sample down")
         self.move_down_btn.clicked.connect(self.move_down_btn_clicked)
 
     def _layout_controls(self):
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.sample_list)
-        ivbox = QtGui.QVBoxLayout()
+        ivbox = QtWidgets.QVBoxLayout()
         ivbox.addWidget(self.add_sample_btn)
         ivbox.addWidget(self.rename_sample_btn)
         ivbox.addWidget(self.remove_sample_btn)
@@ -427,7 +427,7 @@ class EditSamplesWindow(QtGui.QDialog):
         hbox.addLayout(ivbox)
         vbox.addLayout(hbox)
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addStretch(1.0)
         hbox.addWidget(self.ok)
         hbox.addWidget(self.cancel)
@@ -436,7 +436,7 @@ class EditSamplesWindow(QtGui.QDialog):
         self.setLayout(vbox)
 
     def add_sample_btn_clicked(self):
-        text, ok = QtGui.QInputDialog.getText(self, 'Sample name input',  'Sample name:')
+        text, ok = QtWidgets.QInputDialog.getText(self, 'Sample name input',  'Sample name:')
 
         if ok:
             self.sample_list.addItem(text)
@@ -444,7 +444,7 @@ class EditSamplesWindow(QtGui.QDialog):
     def rename_sample_btn_clicked(self):
         item = self.sample_list.currentItem()
         if item:
-            text, ok = QtGui.QInputDialog.getText(self, 'Rename sample',  'New sample name:')
+            text, ok = QtWidgets.QInputDialog.getText(self, 'Rename sample',  'New sample name:')
             if ok:
                 item.setText(text)
 
@@ -472,7 +472,7 @@ class EditSamplesWindow(QtGui.QDialog):
 
 
 if __name__ == "__main__":
-    qApp = QtGui.QApplication(sys.argv)
+    qApp = QtWidgets.QApplication(sys.argv)
     wnd = ApplicationWindow()
     wnd.show()
     sys.exit(qApp.exec_())

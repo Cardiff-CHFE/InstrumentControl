@@ -1,11 +1,11 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 from collections import deque
 import pyqtgraph as pg
 import numpy as np
 from instrument import DataWindow, ConfigWindow
 
-class DCWidget(QtGui.QWidget, DataWindow):
+class DCWidget(QtWidgets.QWidget, DataWindow):
     def __init__(self, inst):
         super().__init__()
         self.instrument = inst
@@ -13,13 +13,13 @@ class DCWidget(QtGui.QWidget, DataWindow):
         self._layout_controls()
 
     def _create_controls(self):
-        self.trigger_btn = QtGui.QPushButton("Trigger")
+        self.trigger_btn = QtWidgets.QPushButton("Trigger")
         self.trigger_btn.clicked.connect(self.trigger_btn_clicked)
-        self.record_trigger = QtGui.QCheckBox("Trigger on record")
+        self.record_trigger = QtWidgets.QCheckBox("Trigger on record")
         self.record_trigger.stateChanged.connect(self.record_trigger_changed)
 
     def _layout_controls(self):
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.trigger_btn)
         vbox.addWidget(self.record_trigger)
         vbox.addStretch()
@@ -40,7 +40,7 @@ class DCWidget(QtGui.QWidget, DataWindow):
     def record_trigger_changed(self, state):
         self.instrument.cfg.record_trigger = state
 
-class DCConfigWindow(QtGui.QWidget, ConfigWindow):
+class DCConfigWindow(QtWidgets.QWidget, ConfigWindow):
     def __init__(self):
         super().__init__()
         self._create_controls()
