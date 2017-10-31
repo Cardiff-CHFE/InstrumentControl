@@ -1,4 +1,6 @@
 import collections
+from utils import float_to_si
+from math import inf
 
 __all__ = [
     'MObject', 'MDict', 'MInt', 'MFloat', 'MString',
@@ -18,12 +20,6 @@ class TDict(T):
         self.dtype = dtype
 
     def __call__(self, value=None):
-        if value is None:
-            value = {}
-        if isinstance(value, MDict):
-            if value.dtype != self.dtype:
-                raise ValueError("Invalid dictionary type")
-            return value
         return MDict(self.dtype, value)
 
     def __eq__(self, other):
@@ -35,12 +31,6 @@ class TList(T):
         self.dtype = dtype
 
     def __call__(self, value=None):
-        if value is None:
-            value = []
-        if isinstance(value, MList):
-            if value.dtype != self.dtype:
-                raise ValueError("Invalid list type")
-            return value
         return MList(self.dtype, value)
 
     def __eq__(self, otheR):
@@ -69,8 +59,13 @@ class TUnion(T):
 
 
 class TInt(T):
+    def __init__(self, default=0):
+        self.default = default
+
     # TODO Implement bounds checking
-    def __call__(self, value=0):
+    def __call__(self, value=None):
+        if value is None:
+            value = self.default
         return MInt(value)
 
     def __eq__(self, other):
@@ -78,17 +73,33 @@ class TInt(T):
 
 
 class TFloat(T):
+    def __init__(self, default=0.0, minimum=-999.999999e24,
+                 maximum=999.999999e24, suffix=""):
+        self.default = default
+        self.suffix = suffix
+        self.minimum = minimum
+        self.maximum = maximum
+
     # TODO Implement bounds checking
-    def __call__(self, value=0.0):
-        return MFloat(value)
+    def __call__(self, value=None):
+        if value is None:
+            value = self.default
+        if not self.minimum < value < self.maximum:
+            raise ValueError("Value out of range")
+        return MFloat(value, suffix=self.suffix)
 
     def __eq__(self, other):
         return type(other) == type(self)
 
 
 class TBool(T):
+    def __init__(self, default=False):
+        self.default = default
+
     # TODO Implement bounds checking
-    def __call__(self, value=False):
+    def __call__(self, value=None):
+        if value is None:
+            value = self.default
         return MBool(value)
 
     def __eq__(self, other):
@@ -96,8 +107,12 @@ class TBool(T):
 
 
 class TString(T):
+    def __init__(self, default=""):
+        self.default = default
     # TODO Implement bounds checking
-    def __call__(self, value=""):
+    def __call__(self, value=None):
+        if value is None:
+            value = self.default
         return MString(value)
 
     def __eq__(self, other):
@@ -106,11 +121,11 @@ class TString(T):
 
 class BaseCollection(object):
     def __init__(self, items=None):
-        self._model = None
+        self._dataModel = None
         self._data = []
         if items is not None:
-            for key, value in items:
-                self.addChild(value, key)
+            for row, (key, value) in enumerate(items):
+                self._data.append((key, self._newChild(row, value)))
 
     def dtypeForRow(self, row):
         """Override this to get the data type of a row"""
@@ -120,48 +135,61 @@ class BaseCollection(object):
         """Override this to generate a key for a row"""
         raise NotImplementedError()
 
+    def canEditKeys(self):
+        """Override this to indicate if keys can be edited"""
+        raise NotImplementedError()
+
+    def canMoveChildren(self):
+        """Override this to indicate if children can be moved"""
+        raise NotImplementedError()
+
+    def updateRowKey(self, row):
+        """Override this to update keys of rows that have moved"""
+        return None
+
+    def reprRow(self, row):
+        """
+        Override this to return a repr string for the row.
+
+        Some examples include "[2]", "['key']", or ".someProperty"
+        """
+        raise NotImplementedError()
+
     def rowForKey(self, key):
         for i, (row, _) in enumerate(self._data):
             if row == key:
                 return i
         raise KeyError()
 
-    def updateRowKey(self, row):
-        """Override this to update keys of rows that have moved"""
-        return None
-
     def childCount(self):
         return len(self._data)
 
     def child(self, row):
-        return self._data[row]
+        return self._data[row][1]
+
+    def childKey(self, row):
+        return self._data[row][0]
 
     def children(self):
         for row in self._data:
             yield row
 
     def setChild(self, row, value):
-        self._data[row][1] = self._newChild(row, value)
-        try:
-            self.model.updateChild(self, row)
-        except AttributeError:
-            pass
+        self._data[row] = (self.childKey(row), self._newChild(row, value))
+        if self.dataModel is not None:
+            self.dataModel.updateChild(self, row)
 
     def setChildKey(self, row, value):
-        self._data[row][0] = str(value)
-        try:
-            self.model.updateChildKeys(self, row, 1)
-        except AttributeError:
-            pass
+        self._data[row] = (str(value), self.child(row))
+        if self.dataModel is not None:
+            self.dataModel.updateChildKeys(self, row, 1)
 
     def addChild(self, value, key=None):
         self.insertChild(len(self._data), value, key)
 
     def insertChild(self, row, value, key=None):
-        try:
-            self.model.beginInsertChildren(self, row, 1)
-        except AttributeError:
-            pass
+        if self.dataModel is not None:
+            self.dataModel.beginInsertChildren(self, row, 1)
 
         if key is None:
             key = self.keyForRow(row)
@@ -169,78 +197,91 @@ class BaseCollection(object):
             key = str(key)
         self._data.insert(row, (key, self._newChild(row, value)))
 
-        try:
-            self.model.endInsertChildren(self)
-        except AttributeError:
-            pass
+        if self.dataModel is not None:
+            self.dataModel.endInsertChildren(self)
 
         self._updateKeys(row, len(self._data))
 
     def insertChildren(self, row, count):
-        try:
-            self.model.beginInsertChildren(self, row, count)
-        except AttributeError:
-            pass
+        if self.dataModel is not None:
+            self.dataModel.beginInsertChildren(self, row, count)
 
         for i in range(row, row+count):
             key = self.keyForRow(i)
             self._data.insert(i, (key, self._newChild(i)))
 
-        try:
-            self.model.endInsertChildren(self)
-        except AttributeError:
-            pass
+        if self.dataModel is not None:
+            self.dataModel.endInsertChildren(self)
 
         self._updateKeys(row+count, len(self._data))
 
     def removeChildren(self, row, count):
-        try:
-            self.model.beginRemoveChildren(self, row, count)
-        except AttributeError:
-            pass
+        if self.dataModel is not None:
+            self.dataModel.beginRemoveChildren(self, row, count)
 
         for i in range(count):
             del self._data[row]
 
-        try:
-            self.model.endRemoveChildren(self)
-        except AttributeError:
-            pass
+        if self.dataModel is not None:
+            self.dataModel.endRemoveChildren(self)
 
         self._updateKeys(row, len(self._data))
 
+    def moveChildren(self, row, count, dest):
+        if row <= dest < row+count:
+            raise RuntimeError("Destination must not be within source")
+        elif dest == row+count:
+            return
+
+        if self.dataModel is not None:
+            self.dataModel.beginMoveChildren(self, row, count, dest)
+
+        if dest > row:
+            dest -= count
+        temp = self._data[row:row+count]
+        del self._data[row:row+count]
+        self._data[dest:dest] = temp
+
+        if self.dataModel is not None:
+            self.dataModel.endMoveChildren(self)
+
+        self._updateKeys(min(row, dest), max(row+count, dest+count))
+
     def _newChild(self, row, value=None):
-        if value is None:
-            value = self.dtypeForRow(row)()
-        else:
-            value = self.dtypeForRow(row)(value)
+        value = self.dtypeForRow(row)(value)
         value.parent = self
         value.row = row
-        value.model = self.model
+        value.dataModel = self.dataModel
         return value
 
     def _updateKeys(self, start, end):
         keysChanged = False
-        for i in range(start, end):
-            newKey = self.updateRowKey(i)
+        for row in range(start, end):
+            self.child(row).row = row
+            newKey = self.updateRowKey(row)
             if newKey is not None:
-                self._data[i][0] = newKey
+                self._data[row] = (newKey, self.child(row))
                 keysChanged = True
         if keysChanged:
-            try:
-                self.model.updateChildKeys(self, start, end-start)
-            except AttributeError:
-                pass
+            if self.dataModel is not None:
+                self.dataModel.updateChildKeys(self, start, end-start)
 
     @property
-    def model(self):
-        return self._model
+    def dataModel(self):
+        return self._dataModel
 
-    @model.setter
-    def model(self, model):
-        self._model = model
+    @dataModel.setter
+    def dataModel(self, dataModel):
+        self._dataModel = dataModel
         for _, value in self._data:
-            value.model = model
+            value.dataModel = dataModel
+
+    def __repr__(self):
+        path = ""
+        parent = self.parent
+        while parent is not None:
+            path = parent.reprRow(self.row) + path
+        return path
 
 
 class PropertyInternal:
@@ -252,7 +293,7 @@ class PropertyInternal:
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        return instance.child(self.row)[1]
+        return instance.child(self.row)
 
     def __set__(self, instance, value):
         instance.setChild(self.row, value)
@@ -273,7 +314,7 @@ class TObjectMeta(type):
 
 class TObject(BaseCollection, metaclass=TObjectMeta):
     def __init__(self, data=None):
-        self._model = None
+        self._dataModel = None
         self.parent = None
         self.row = 0
         # Extras are items that we don't care about, but should still save
@@ -289,10 +330,10 @@ class TObject(BaseCollection, metaclass=TObjectMeta):
                 for prop in self.dtypes:
                     key = prop.rstrip('_')
                     try:
-                        items.append(key, data[key])
+                        items.append((key, data[key]))
                         keys.remove(key)
                     except KeyError:
-                        items.append(key, None)
+                        items.append((key, None))
                 super().__init__(items)
                 # Store unused keys in the extras dict
                 for key in keys:
@@ -304,8 +345,17 @@ class TObject(BaseCollection, metaclass=TObjectMeta):
             data[key] = value.serialize()
         return data
 
+    def __str__(self):
+        return ""
+
     def dtypeForRow(self, row):
         return list(self.dtypes.values())[row]
+
+    def canEditKeys(self):
+        return False
+
+    def reprRow(self, row):
+        return ".{}".format(list(self.dtypes.keys())[row])
 
     def setChildKey(self, row, value):
         raise RuntimeError("Cannot change TObject keys")
@@ -315,6 +365,9 @@ class TObject(BaseCollection, metaclass=TObjectMeta):
 
     def insertChildren(self, row, count):
         raise RuntimeError("Cannot insert into TObject")
+
+    def moveChildren(self, row, count, dest):
+        raise RuntimeError("Cannot move children of TObject")
 
     def removeChildren(self, row, count):
         raise RuntimeError("Cannot remove from TObject")
@@ -340,6 +393,9 @@ class MDict(BaseCollection, collections.MutableMapping):
             except KeyError:
                 return key
 
+    def canEditKeys(self):
+        return True
+
     def __setitem__(self, key, value):
         try:
             row = self.rowForKey(key)
@@ -349,7 +405,7 @@ class MDict(BaseCollection, collections.MutableMapping):
 
     def __getitem__(self, key):
         row = self.rowForKey(key)
-        return self.child(row)[1]
+        return self.child(row)
 
     def __delitem__(self, key):
         row = self.rowForKey(key)
@@ -359,11 +415,11 @@ class MDict(BaseCollection, collections.MutableMapping):
         for row in self.children():
             yield row[0]
 
-    def items():
+    def items(self):
         """Optional, but improves efficiency of iteration"""
         return self.children()
 
-    def values():
+    def values(self):
         """Optional, but improves efficiency of iteration"""
         for row in self.children():
             yield row[1]
@@ -383,10 +439,11 @@ class MDict(BaseCollection, collections.MutableMapping):
 
     def setChildKey(self, row, value):
         try:
-            self.rowForKey(value)
-            raise ValueError("Key already exists")
+            if row != self.rowForKey(value):
+                raise ValueError("Key already exists")
         except KeyError:
-            super().setChildKey(row, value)
+            pass
+        super().setChildKey(row, value)
 
     def insertChild(self, row, value, key=None):
         if key is not None:
@@ -405,15 +462,6 @@ class MList(BaseCollection, collections.MutableSequence):
         if items is not None:
             items = enumerate(items, start=1)
         super().__init__(items)
-
-    def dtypeForRow(self, row):
-        return self.dtype
-
-    def keyForRow(self, row):
-        return str(row + 1)
-
-    def updateRowKey(self, row):
-        return str(row+1)
 
     def __getitem__(self, index):
         return self.child(index)
@@ -436,6 +484,21 @@ class MList(BaseCollection, collections.MutableSequence):
             data.append(value.serialize())
         return data
 
+    def __str__(self):
+        return ""
+
+    def dtypeForRow(self, row):
+        return self.dtype
+
+    def keyForRow(self, row):
+        return str(row + 1)
+
+    def canEditKeys(self):
+        return False
+
+    def updateRowKey(self, row):
+        return str(row+1)
+
     def setChildKey(self, row, value):
         """List keys cannot be changed"""
         pass
@@ -447,7 +510,7 @@ class MList(BaseCollection, collections.MutableSequence):
 
 class MInt(int):
     def __init__(self, *args, **kwargs):
-        self.model = None
+        self.dataModel = None
         self.parent = None
         self.row = 0
 
@@ -456,30 +519,39 @@ class MInt(int):
 
 
 class MFloat(float):
-    def __init__(self, *args, **kwargs):
-        self.model = None
-        self.parent = None
-        self.row = 0
+    def __init__(self, value, suffix=""):
+        self.suffix = suffix
+
+    def __new__(cls, value, suffix=""):
+        return float.__new__(cls, value)
+
+    def __str__(self):
+        return float_to_si(self) + self.suffix
+
+    def __repr__(self):
+        return self.__str__()
 
     def serialize(self):
         return float(self)
 
 
-class MBool(bool):
-    def __init__(self, *args, **kwargs):
-        self.model = None
+class MBool(object):
+    def __init__(self, value):
+        self.value = bool(value)
+        self.dataModel = None
         self.parent = None
         self.row = 0
+
+    def __str__(self):
+        return str(self.value)
+
+    def __bool__(self):
+        return self.value
 
     def serialize(self):
         return bool(self)
 
 
 class MString(str):
-    def __init__(self, *args, **kwargs):
-        self.model = None
-        self.parent = None
-        self.row = 0
-
     def serialize(self):
         return str(self)
