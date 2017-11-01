@@ -1,4 +1,4 @@
-from resources import getResourcePath
+from utils import getResourcePath
 from PyQt5.uic import loadUiType
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDataWidgetMapper, QFileDialog

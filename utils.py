@@ -1,4 +1,6 @@
 from collections import OrderedDict
+import os
+import sys
 
 si_prefixes = OrderedDict([
     ('Y', 1e24),
@@ -43,3 +45,8 @@ def si_to_float(string):
         return float(string)
     except IndexError:
         return 0.0
+
+
+def getResourcePath(name):
+    directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+    return os.path.join(directory, 'res', name)

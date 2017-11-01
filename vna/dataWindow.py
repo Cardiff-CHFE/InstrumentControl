@@ -1,10 +1,9 @@
-from resources import getResourcePath
 from PyQt5.QtCore import Qt, QVariant
 from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.uic import loadUiType
 import pyqtgraph as pg
 import numpy as np
-from utils import float_to_si
+from utils import float_to_si, getResourcePath
 
 NetworkAnalyserViewerUi, NetworkAnalyserViewerBase = loadUiType(
     getResourcePath('ui/vnaDataWindow.ui'))
