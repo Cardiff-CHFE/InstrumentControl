@@ -45,13 +45,8 @@ class Instrument(object):
         self.thread = threading.Thread(target=self._run)
         self.commandqueue = queue.Queue()
 
-    @staticmethod
-    def match_device(devname):
-        """Override this to determine if an instrument is the correct type"""
-        return False
-
-    def setup(self, config):
-        """Override this to initialize the instrument"""
+    def setup(self):
+        """Override this to setup the instrument"""
 
     def sample(self, elapsed):
         """Override this to acquire/write a sample"""
@@ -69,6 +64,7 @@ class Instrument(object):
         return []
 
     def _run(self):
+        self.setup()
         while self.running:
             while True:
                 try:
@@ -79,6 +75,7 @@ class Instrument(object):
             s = self.sample(elapsed)
             if s is not None:
                 self.queue.put((elapsed, s))
+        self.cleanup()
 
     def start(self, timestart):
         """Start the acquire loop"""
