@@ -219,6 +219,9 @@ class BaseCollection(object):
 
         self._updateKeys(row+count, len(self._data))
 
+    def removeChild(self, row):
+        self.removeChildren(row, 1)
+
     def removeChildren(self, row, count):
         if self.dataModel is not None:
             self.dataModel.beginRemoveChildren(self, row, count)
