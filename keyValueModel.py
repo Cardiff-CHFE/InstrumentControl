@@ -6,6 +6,11 @@ class KeyValueModel(QAbstractItemModel):
         super().__init__()
         root.dataModel = self
         self._root = root
+        self.icons = {}
+
+    @property
+    def root(self):
+        return self._root
 
     def columnCount(self, index):
         return 2
@@ -50,6 +55,12 @@ class KeyValueModel(QAbstractItemModel):
                 try:
                     return self.keyOf(index)
                 except Exception:
+                    pass
+            elif role == Qt.DecorationRole:
+                type_ = type(self.valueOf(index))
+                try:
+                    return self.icons[type_]
+                except KeyError:
                     pass
         elif column == 1:
             if role == Qt.DisplayRole:
