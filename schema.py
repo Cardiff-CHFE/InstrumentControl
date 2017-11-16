@@ -155,6 +155,10 @@ class BaseCollection(object):
         """
         raise NotImplementedError()
 
+    def clone(self):
+        """Override this to clone self"""
+        raise NotImplementedError()
+
     def rowForKey(self, key):
         for i, (row, _) in enumerate(self._data):
             if row == key:
@@ -372,6 +376,9 @@ class TObject(BaseCollection, metaclass=TObjectMeta):
     def removeChildren(self, row, count):
         raise RuntimeError("Cannot remove from TObject")
 
+    def clone(self):
+        return type(self)(self)
+
 
 class MDict(BaseCollection, collections.MutableMapping):
     def __init__(self, dtype, items=None):
@@ -455,6 +462,9 @@ class MDict(BaseCollection, collections.MutableMapping):
         else:
             super().insertChild(row, value)
 
+    def clone(self):
+        return type(self)(self.dtype, self)
+
 
 class MList(BaseCollection, collections.MutableSequence):
     def __init__(self, dtype, items=None):
@@ -506,6 +516,9 @@ class MList(BaseCollection, collections.MutableSequence):
     def insertChild(self, row, value, key=None):
         """Ignore the key and let the list choose it's own"""
         super().insertChild(row, value)
+
+    def clone(self):
+        return type(self)(self.dtype, self)
 
 
 class MInt(int):
