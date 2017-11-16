@@ -1,11 +1,13 @@
 from utils import getResourcePath
 from PyQt5.uic import loadUiType
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDataWidgetMapper, QFileDialog
+from PyQt5.QtWidgets import QDataWidgetMapper, QFileDialog, QDialog, QErrorMessage
 from PyQt5.QtCore import QTimer, QItemSelectionModel, QItemSelection
+from uis.editInstrumentsDialog import EditInstrumentsDialog
 from keyValueModel import KeyValueModel
 from schemaDelegate import SchemaDelegate
 import sys
+import os
 
 MainWindowUI, MainWindowBase = loadUiType(getResourcePath('ui/mainWindow.ui'))
 
@@ -16,10 +18,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
 
         self.backend = backend
-        self.instrumentWindowTypes = {}
+
+        self.instrumentDataWindows = {}
+        self.instrumentConfigWindows = {}
+        self.instrumentIcons = {}
+
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.timerTimeout)
         self.actionOpenConfig.triggered.connect(lambda: self.openConfig())
+        self.configureInstruments.clicked.connect(self.editInstruments)
         self.runButton.clicked[bool].connect(self.runButtonClicked)
         self.recordButton.clicked[bool].connect(self.recordButtonClicked)
         self.recordDuration.valueChanged.connect(self.recordDurationChanged)
@@ -49,6 +56,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def registerInsturmentType(self, name, wnd):
         self.instrumentWindowTypes[name] = wnd
+    def editInstruments(self):
+        config = self.backend.config.instruments
+        editInstrumentDialog = EditInstrumentsDialog(config, self.instrumentIcons, self.instrumentConfigWindows)
+        if editInstrumentDialog.exec_() == QDialog.Accepted:
+            config.parent.setChild(config.row, editInstrumentDialog.config)
+
+    def registerInsturmentType(self, name, dataWindow, configWindow=None):
+        self.instrumentDataWindows[name] = dataWindow
+        if configWindow is not None:
+            self.instrumentConfigWindows[name] = configWindow
+
+    def registerInstrumentIcon(self, configType, icon):
+        self.instrumentIcons[configType] = icon
 
     def enableConfigWidgets(self):
         self.runButton.setEnabled(True)
@@ -81,7 +101,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.backend.start()
             for name, cfg in self.backend.config.instruments.items():
                 instrument = self.backend.instruments[name]
-                widget = self.instrumentWindowTypes[cfg.type_](instrument)
+                widget = self.instrumentDataWindows[cfg.type_](instrument)
                 self.instrumentTabs.addTab(widget, name)
             self.updateTimer.start(500)
             self.updateSampleButtons(self.samplesList.currentIndex())
