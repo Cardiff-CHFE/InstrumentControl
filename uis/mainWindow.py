@@ -39,7 +39,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.removeSample.clicked.connect(self.removeSampleClicked)
         self.moveUp.clicked.connect(self.moveUpClicked)
         self.moveDown.clicked.connect(self.moveDownClicked)
-        self.samplesList.clicked.connect(self.updateSampleButtons)
 
         self.running = False
 
@@ -99,6 +98,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.samplesList.setItemDelegate(self.sampleListDelegate)
         self.samplesList.setRootIndex(parent)
         self.samplesList.setModelColumn(1)
+        self.samplesList.selectionModel().currentChanged.connect(
+            lambda current, prev: self.updateSampleButtons(current))
 
     def timerTimeout(self):
         updatefns = {}
