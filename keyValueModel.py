@@ -147,10 +147,12 @@ class KeyValueModel(QAbstractItemModel):
     def indexOf(self, node, column):
         return self.createIndex(node.row, column, node.parent)
 
-    def valueOf(self, index):
+    @staticmethod
+    def valueOf(index):
         return index.internalPointer().child(index.row())
 
-    def keyOf(self, index):
+    @staticmethod
+    def keyOf(index):
         return index.internalPointer().childKey(index.row())
 
     def updateChild(self, parent, row):
