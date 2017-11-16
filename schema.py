@@ -397,6 +397,7 @@ class MDict(BaseCollection, collections.MutableMapping):
             key = fmt.format(i)
             try:
                 self.rowForKey(key)
+                i += 1
             except KeyError:
                 return key
 
