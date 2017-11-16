@@ -44,6 +44,7 @@ class SchemaDelegate(QStyledItemDelegate):
         column = index.column()
         if column == 0:
             editor.setText(index.data(Qt.EditRole))
+            return
         elif column == 1:
             value = index.data(Qt.EditRole)
             delegate = self.findDelegate(value)
