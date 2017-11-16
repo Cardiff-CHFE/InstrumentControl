@@ -3,66 +3,29 @@ import time
 import csv
 import os
 import os.path
-from schema import TObject, TDict, TUnion, TList, TString, TFloat
-
-
-class ConfigLoader():
-    def __init__(self):
-        class Configuration(TObject):
-            datadir = TString()
-            instruments = TDict(TUnion({}))
-            record_duration = TFloat()
-            samples = TList(TString())
-
-        self.schema = Configuration
-
-    def register_instrument(self, name, dtype):
-        instrument_dict = self.schema.dtypes['instruments']
-        union = instrument_dict.dtype
-        union.dtypes[name] = dtype
-
-    def load(self, data):
-        return self.schema(data)
-
-    def save(self, data):
-        return data.serialize()
-
 
 class InstrumentException(Exception):
     pass
-
 
 class Backend(object):
     def __init__(self):
         self.instrument_drivers = {}
         self.instruments = {}
-        self.config = {}
+        self.config = None
         self.data_logger = DataLogger()
         self.logging = False
-        self.config_loader = ConfigLoader()
 
-    def load_configfile(self, cfile):
-        self.datadir = os.path.dirname(cfile)
-        self.configfile = cfile
-        with open(cfile) as fp:
-            self.load_config(fp)
+    def set_config(self, value, directory):
+        self.config = value
+        self.datadir = os.path.normpath(os.path.join(directory, self.config.datadir))
 
-    def save_configfile(self):
-        with open(self.configfile, 'w') as fp:
-            self.save_config(fp)
+        if self.config.master_instrument == '' and len(self.config.instruments):
+            for name, inst in self.config.instruments.items():
+                self.config.master_instrument = name
+                if inst.type_ == 'vna':
+                    break
 
-    def load_config(self, fp):
-        self.config = self.config_loader.load(json.load(fp))
-        if self.config.datadir != "":
-            # Update data dir relative to config file (unless abs path used)
-            self.datadir = os.path.normpath(os.path.join(self.datadir, self.config.datadir))
-
-    def save_config(self, fp):
-        data = self.config_loader.save(self.config)
-        json.dump(data, fp, indent=4, separators=(',', ': '))
-
-    def register_instrument(self, name, config, driver):
-        self.config_loader.register_instrument(name, config)
+    def register_instrument(self, name, driver):
         self.instrument_drivers[name] = driver
 
     def start(self):

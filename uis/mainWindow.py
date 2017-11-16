@@ -13,11 +13,13 @@ MainWindowUI, MainWindowBase = loadUiType(getResourcePath('ui/mainWindow.ui'))
 
 
 class MainWindow(MainWindowBase, MainWindowUI):
-    def __init__(self, backend, parent=None):
+    def __init__(self, backend, configLoader, parent=None):
         MainWindowBase.__init__(self, parent)
         self.setupUi(self)
 
         self.backend = backend
+        self.configLoader = configLoader
+        self.cfgfile = None
 
         self.instrumentDataWindows = {}
         self.instrumentConfigWindows = {}
@@ -26,6 +28,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.timerTimeout)
         self.actionOpenConfig.triggered.connect(lambda: self.openConfig())
+        self.actionSaveConfig.triggered.connect(lambda: self.saveConfig())
+        self.actionSaveConfigAs.triggered.connect(lambda: self.saveConfigAs())
+
         self.configureInstruments.clicked.connect(self.editInstruments)
         self.runButton.clicked[bool].connect(self.runButtonClicked)
         self.recordButton.clicked[bool].connect(self.recordButtonClicked)
@@ -38,24 +43,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.running = False
 
-        if(len(sys.argv) > 1):
-            self.openConfig(sys.argv[1])
-
     def openConfig(self, cfgfile=None):
         if cfgfile is None:
             cfgfile, _ = QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)")
         try:
-            self.backend.load_configfile(cfgfile)
-            self.enableConfigWidgets()
-            self.linkConfigWidgets(self.backend.config)
+            with open(cfgfile, 'r') as fp:
+                config = self.configLoader.loadFile(fp)
+                self.backend.set_config(config, os.path.dirname(cfgfile))
+                self.enableConfigWidgets()
+                self.linkConfigWidgets(self.backend.config)
+                self.cfgfile = cfgfile
         except (FileNotFoundError, ValueError) as err:
-            msg = QtWidgets.QErrorMessage()
+            msg = QErrorMessage()
             msg.setWindowTitle("Config File Error")
             msg.showMessage(str(err))
             msg.exec_()
 
-    def registerInsturmentType(self, name, wnd):
-        self.instrumentWindowTypes[name] = wnd
+    def saveConfig(self):
+        if self.cfgfile is not None:
+            with open(self.cfgfile, 'w') as fp:
+                self.configLoader.saveFile(fp, self.backend.config)
+
+    def saveConfigAs(self):
+        cfgfile, _ = QFileDialog.getSaveFileName(self, "Select File", filter="Configuration files (*.json)")
+        with open(cfgfile, 'r') as fp:
+            self.configLoader.saveFile(fp, self.backend.config)
+            self.cfgfile = cfgfile
+
     def editInstruments(self):
         config = self.backend.config.instruments
         editInstrumentDialog = EditInstrumentsDialog(config, self.instrumentIcons, self.instrumentConfigWindows)
@@ -74,6 +88,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.runButton.setEnabled(True)
         self.samplesList.setEnabled(True)
         self.addSample.setEnabled(True)
+        self.actionSaveConfig.setEnabled(True)
+        self.actionSaveConfigAs.setEnabled(True)
 
     def linkConfigWidgets(self, config):
         self.configModel = KeyValueModel(config)
