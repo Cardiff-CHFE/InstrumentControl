@@ -5,14 +5,14 @@ import pyqtgraph as pg
 import numpy as np
 from utils import float_to_si, getResourcePath
 
-NetworkAnalyserViewerUi, NetworkAnalyserViewerBase = loadUiType(
+DataWindowUi, DataWindowBase = loadUiType(
     getResourcePath('ui/vnaDataWindow.ui'))
 
 
 class DataWindow(
-        NetworkAnalyserViewerBase, NetworkAnalyserViewerUi):
+        DataWindowBase, DataWindowUi):
     def __init__(self, instrument, parent=None):
-        NetworkAnalyserViewerBase.__init__(self, parent)
+        DataWindowBase.__init__(self, parent)
         self.setupUi(self)
 
         self.instrument = instrument
