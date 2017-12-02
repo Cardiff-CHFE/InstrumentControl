@@ -14,6 +14,7 @@ class InstrumentError(RuntimeError):
 
 class E5071X:
     def __init__(self, config):
+        global VisaIOError, onoff
         import visa
         from pyvisa.errors import VisaIOError
         import scpi
