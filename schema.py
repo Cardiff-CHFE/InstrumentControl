@@ -546,7 +546,7 @@ class MFloat(float):
         return float_to_si(self) + self.suffix
 
     def __repr__(self):
-        return self.__str__()
+        return repr(float(self))
 
     def serialize(self):
         return float(self)

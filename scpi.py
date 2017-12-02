@@ -25,7 +25,7 @@ class Wrapper(object):
         return self.res.query_ascii_values(cmd.format(*args, **kwargs))
 
     def write_ascii_values(self, cmd, data, *args, **kwargs):
-        self.res.write(cmd.format(*args, **kwargs) + " " + ",".join([str(x) for x in data]))
+        self.res.write(cmd.format(*args, **kwargs) + " " + ",".join([repr(x) for x in data]))
         #self.res.write_ascii_values(cmd.format(*args, **kwargs), data)
 
     def write(self, cmd, *args, **kwargs):
