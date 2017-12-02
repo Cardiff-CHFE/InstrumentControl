@@ -71,10 +71,11 @@ class Instrument(object):
                     self.commandqueue.get_nowait()(self) # Get and execute command
                 except queue.Empty:
                     break
-            elapsed = time.time()-self.timestart
+            current_time = time.time()
+            elapsed = current_time-self.timestart
             s = self.sample(elapsed)
             if s is not None:
-                self.queue.put((elapsed, s))
+                self.queue.put((current_time, s))
         self.cleanup()
 
     def start(self, timestart):

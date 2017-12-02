@@ -14,6 +14,7 @@ class Backend(object):
         self.config = None
         self.data_logger = DataLogger()
         self.logging = False
+        self.datadir = None
 
     def set_config(self, value, directory):
         self.config = value
@@ -33,9 +34,9 @@ class Backend(object):
             driver_cls = self.instrument_drivers[instcfg.type_]
             self.instruments[name] = driver_cls(instcfg)
 
-        stime = time.time()
+        self.start_time = time.time()
         for name, inst in self.instruments.items():
-            inst.start(stime)
+            inst.start(self.start_time)
 
     def stop(self):
         for inst in self.instruments.values():
@@ -43,14 +44,14 @@ class Backend(object):
         self.instruments = {}
 
     def start_logging(self, sample_name):
-        exists = self.data_logger.open_files(self.instruments.keys(),
-                                    os.path.join(self.datadir, sample_name))
+        exists = self.data_logger.open_files(self.instruments.keys(), self.datadir, sample_name)
         for ((name, inst), existing) in zip(self.instruments.items(), exists):
             if not existing:
                 self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
         self.logging = True
-        if self.config.record_duration > 0.0:
-            self.log_start = time.time()
+        self.log_time = time.time()
+        #if self.config.max_samples > 0:
+        #    self.remaining_samples = self.config.max_samples
         for inst in self.instruments.values():
             inst.on_record_start()
 
@@ -65,12 +66,12 @@ class Backend(object):
             samples = inst.get_samples()
             if self.logging:
                 for s in samples:
-                    self.data_logger.write(name, [s[0]] + inst.format_sample(s[1]))
+                    self.data_logger.write(name, [s[0]-self.log_time] + inst.format_sample(s[1]))
             if name in fns:
                 for s in samples:
-                    fns[name](s[0], s[1])
+                    fns[name](s[0]-self.start_time, s[1])
         if self.config.record_duration > 0.0 and self.logging:
-            if time.time() - self.log_start > self.config.record_duration:
+            if time.time() - self.log_time > self.config.record_duration:
                 self.stop_logging()
                 return False
         return True
@@ -81,12 +82,13 @@ class DataLogger(object):
         self.files = {}
         self.writers = {}
 
-    def open_files(self, names, path):
+    def open_files(self, names, datadir, sample_name):
         exists = []
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
         for name in names:
-            fname = os.path.join(path, name + ".csv")
+            fname = os.path.join(datadir, sample_name)
+            fname += '_' + name + ".csv"
             if os.path.isfile(fname):
                 exists.append(True)
             else:
