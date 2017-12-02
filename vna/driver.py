@@ -141,12 +141,12 @@ class N5232A:
     def get_marker_data(self, marker=1, channel=1):
         raise NotImplementedError()
 
-    def get_sweep_data(self, channel=1):
-        data = self.res.query_ascii_values(":CALC{}:DATA? SDAT", channel)
+    def get_sweep_data(self):
+        data = self.res.query_ascii_values(":CALC1:DATA? SDAT")
         return np.array(data).reshape((-1, 2)).T
 
-    def get_freq_data(self, channel=1):
-        return self.res.query_ascii_values(":CALC{}:X?", channel)
+    def get_freq_data(self):
+        return self.res.query_ascii_values(":CALC1:X?")
 
     def cleanup(self):
         self.res.close()
