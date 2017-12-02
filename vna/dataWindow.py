@@ -80,18 +80,18 @@ class DataWindow(
             self.qFactorOffset = np.array(self.lastSample.q, dtype=np.float)
 
     def bwOverrideChanged(self, state):
-        if state == QtCore.Qt.Checked:
+        if state == Qt.Checked:
             self.instrument.set_bw_factor_override(self.bw_factor.value())
         else:
             self.instrument.set_bw_factor_override(None)
 
     def bwFactorChanged(self, val):
-        if self.bw_override.checkState() == QtCore.Qt.Checked:
+        if self.bwOverride.checkState() == Qt.Checked:
             self.instrument.set_bw_factor_override(val)
 
     def trackEnableChanged(self, state):
-        self.instrument.set_tracking_override(state == QtCore.Qt.Checked)
-        self.bw_override.setEnabled(state == QtCore.Qt.Checked)
+        self.instrument.set_tracking_override(state == Qt.Checked)
+        self.bwOverride.setEnabled(state == Qt.Checked)
 
     def resetSegmentsPressed(self):
         self.instrument.reset_segments()
