@@ -36,7 +36,7 @@ class Backend(object):
 
         self.start_time = time.time()
         for name, inst in self.instruments.items():
-            inst.start(self.start_time)
+            inst.start()
 
     def stop(self):
         for inst in self.instruments.values():

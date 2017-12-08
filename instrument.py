@@ -72,16 +72,14 @@ class Instrument(object):
                 except queue.Empty:
                     break
             current_time = time.time()
-            elapsed = current_time-self.timestart
-            s = self.sample(elapsed)
+            s = self.sample(current_time)
             if s is not None:
                 self.queue.put((current_time, s))
         self.cleanup()
 
-    def start(self, timestart):
+    def start(self):
         """Start the acquire loop"""
         self.running = True
-        self.timestart = timestart
         self.thread.start()
 
     def stop(self):

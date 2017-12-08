@@ -18,3 +18,4 @@ class Config(TObject):
     use_markers = TBool()
     bandwidth_factor = TFloat(4.0)
     segments = TDict(Segment)
+    sample_interval = TFloat(0.0)

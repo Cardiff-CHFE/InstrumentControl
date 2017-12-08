@@ -298,6 +298,8 @@ class Driver(Instrument):
         self.driver.autoscale()
         self.last_sample = None
 
+        self.next_call = time.time()
+
     def sample(self, elapsed):
         self.driver.trigger(self.cfg.use_markers)
 
@@ -365,6 +367,10 @@ class Driver(Instrument):
                 self.driver.set_segments(self.cfg.segments)
                 self.driver.trigger(self.cfg.use_markers, force=True)
 
+        self.next_call += self.cfg.sample_interval
+        sleepytime = self.next_call - time.time()
+        if sleepytime > 0.0:
+            time.sleep(sleepytime)
         return data
 
     def cleanup(self):
@@ -414,6 +420,7 @@ class VNAState(object):
         self.track_span = config.track_span
         self.use_markers = config.use_markers
         self.bw_factor = config.bandwidth_factor
+        self.sample_interval = config.sample_interval
         self.bw_factor_override = None
         self.track_enabled = True
 
