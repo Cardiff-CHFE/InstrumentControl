@@ -18,6 +18,7 @@ class EditInstrumentsDialog(EditInstrumentsDialogBase, EditInstrumentsDialogUI):
         self.configModel.icons = icons
         self.configWindows = configWindows
         self.instrumentList.setModel(self.configModel)
+        self.instrumentList.setRootIndex(self.configModel.indexOf(self.config.instruments, 0))
         self.instrumentListDelegate = SchemaDelegate()
         self.instrumentList.setItemDelegate(self.instrumentListDelegate)
         self.instrumentList.setModelColumn(0)

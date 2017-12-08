@@ -106,10 +106,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.cfgfile = cfgfile
 
     def editInstruments(self):
-        config = self.backend.config.instruments
-        editInstrumentDialog = EditInstrumentsDialog(config, self.instrumentIcons, self.instrumentConfigWindows)
+        editInstrumentDialog = EditInstrumentsDialog(self.backend.config, self.instrumentIcons, self.instrumentConfigWindows)
         if editInstrumentDialog.exec_() == QDialog.Accepted:
-            config.parent.setChild(config.row, editInstrumentDialog.config)
+            self.backend.set_config(editInstrumentDialog.config, os.path.dirname(self.cfgfile))
+            self.linkConfigWidgets(self.backend.config)
 
     def registerInsturmentType(self, name, dataWindow, configWindow=None):
         self.instrumentDataWindows[name] = dataWindow
