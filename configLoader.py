@@ -24,6 +24,9 @@ class ConfigLoader():
     def loadString(self, value):
         return self.schema(json.loads(value))
 
+    def loadData(self, value):
+        return self.schema(value)
+
     def saveFile(self, fp, data):
         json.dump(data.serialize(), fp, indent=4, separators=(',', ': '))
 

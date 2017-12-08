@@ -21,8 +21,11 @@
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QPushButton" name="configureInstruments">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
-           <string>Configure instruments</string>
+           <string>Edit configuration</string>
           </property>
          </widget>
         </item>
@@ -201,6 +204,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionNewConfig"/>
     <addaction name="actionOpenConfig"/>
     <addaction name="actionSaveConfig"/>
     <addaction name="actionSaveConfigAs"/>
@@ -267,6 +271,14 @@
    </property>
    <property name="text">
     <string>Save config as...</string>
+   </property>
+  </action>
+  <action name="actionNewConfig">
+   <property name="text">
+    <string>&amp;New config</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

@@ -27,6 +27,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.timerTimeout)
+        self.actionNewConfig.triggered.connect(lambda: self.newConfig())
         self.actionOpenConfig.triggered.connect(lambda: self.openConfig())
         self.actionSaveConfig.triggered.connect(lambda: self.saveConfig())
         self.actionSaveConfigAs.triggered.connect(lambda: self.saveConfigAs())
@@ -41,6 +42,41 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.moveDown.clicked.connect(self.moveDownClicked)
 
         self.running = False
+
+    def newConfig(self):
+        #TODO warn if modified
+
+        cfgfile, _ = QFileDialog.getSaveFileName(self, "Select File", filter="Configuration files (*.json)")
+        try:
+            with open(cfgfile, 'w') as fp:
+                config = self.configLoader.loadData({
+                    'instruments': {
+                        'vna0': {
+                            'type': 'vna',
+                            'model': 'simulated',
+                            'segments': {
+                                'TM010' : {
+                                    'type': 'Electric',
+                                    'f0': 2500700000.0,
+                                    'span': 1000000.0,
+                                    'points': 201,
+                                    'ifbw': 1000.0,
+                                    'power': 0.0
+                                }
+                            }
+                        }
+                    }
+                })
+                self.backend.set_config(config, os.path.dirname(cfgfile))
+                self.enableConfigWidgets()
+                self.linkConfigWidgets(self.backend.config)
+                self.cfgfile = cfgfile
+                self.configLoader.saveFile(fp, self.backend.config)
+        except (FileNotFoundError, ValueError) as err:
+            msg = QErrorMessage()
+            msg.setWindowTitle("Config File Error")
+            msg.showMessage(str(err))
+            msg.exec_()
 
     def openConfig(self, cfgfile=None):
         if cfgfile is None:
@@ -85,6 +121,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def enableConfigWidgets(self):
         self.runButton.setEnabled(True)
+        self.configureInstruments.setEnabled(True)
         self.samplesList.setEnabled(True)
         self.addSample.setEnabled(True)
         self.actionSaveConfig.setEnabled(True)

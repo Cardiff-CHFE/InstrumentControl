@@ -22,6 +22,9 @@ class EditInstrumentsDialog(EditInstrumentsDialogBase, EditInstrumentsDialogUI):
         self.instrumentList.setItemDelegate(self.instrumentListDelegate)
         self.instrumentList.setModelColumn(0)
         self.instrumentList.doubleClicked.connect(self.doubleClicked)
+        self.datadir.editingFinished.connect(self.datadirEditingFinished)
+
+        self.datadir.setText(self.config.datadir)
 
     def doubleClicked(self, index):
         config = KeyValueModel.valueOf(index)
@@ -31,3 +34,6 @@ class EditInstrumentsDialog(EditInstrumentsDialogBase, EditInstrumentsDialogUI):
                 config.parent.setChild(config.row, wnd.config)
         except Exception:
             raise
+
+    def datadirEditingFinished(self):
+        self.config.datadir = self.datadir.text()

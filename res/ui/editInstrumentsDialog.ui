@@ -7,13 +7,41 @@
     <x>0</x>
     <y>0</y>
     <width>417</width>
-    <height>222</height>
+    <height>228</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Instrument selection</string>
+   <string>Edit configuration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Data save directory:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="datadir">
+     <property name="cursor">
+      <cursorShape>IBeamCursor</cursorShape>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Edit instruments:</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0">
      <item>
