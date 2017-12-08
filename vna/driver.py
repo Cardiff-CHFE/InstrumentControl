@@ -213,16 +213,18 @@ class S2VNA:
 class Simulated:
     def __init__(self, config):
         self.segments = []
-        self.modes = [
-            (2.5e9, 500e3),
-            (4.529E+09, 300e3),
-        ]
+        def make_sin(center, deviation, period):
+            def fn(t):
+                return math.sin(t*2.0*math.pi/period)*deviation + center
+            return fn
+        self.frequencies = [make_sin(2.5e9, 5e6, 5.0), make_sin(4.529e9, 4e6, 6.0)]
+        self.bandwidths = [make_sin(500e3, 20, 7.0), make_sin(300e3, 10, 8.0)]
 
     def supports_markers(self):
         return False
 
     def setup(self, use_markers):
-        pass
+        self.start_t = time.time()
 
     def set_segments(self, segments, channel=1):
         self.segments = [segment.copy() for segment in segments]
@@ -239,16 +241,15 @@ class Simulated:
     def get_sweep_data(self):
         frequencies = self.get_freq_data()
         amplitudes = np.zeros((2, len(frequencies)))
+        delta_t = time.time() - self.start_t
 
         idx = 0
         for segment in self.segments:
             if segment.enabled:
                 freqs = frequencies[idx:idx+segment.points]
                 amplitudes[1][idx:idx+segment.points] = 0.0
-                for mode in self.modes:
-                    f0 = random.gauss(mode[0], mode[1]/50.0)
-                    bw = random.gauss(mode[1], mode[1]/50.0)
-                    real = lorentz_fn(freqs, f0, bw, 0.05)
+                for freq, bw in zip(self.frequencies, self.bandwidths):
+                    real = lorentz_fn(freqs, freq(delta_t), bw(delta_t), 0.05)
                     amplitudes[0][idx:idx+segment.points] += real
                 idx += segment.points
         return amplitudes
