@@ -20,7 +20,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -35,7 +35,45 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="vnaModel"/>
+        <widget class="QComboBox" name="vnaModel">
+         <item>
+          <property name="text">
+           <string>N5232A</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>E5071X</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>S2VNA</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>simulated</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Sample interval (seconds)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="SISpinBox" name="sampleInterval"/>
        </item>
        <item>
         <widget class="Line" name="line">

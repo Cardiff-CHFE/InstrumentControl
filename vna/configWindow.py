@@ -34,6 +34,17 @@ class ConfigWindow(
         self.points.editingFinished.connect(self.pointsEditingFinished)
         self.ifbw.editingFinished.connect(self.ifbwEditingFinished)
         self.power.editingFinished.connect(self.powerEditingFinished)
+        self.sampleInterval.editingFinished.connect(self.sampleIntervalEditingFinished)
+        self.bandwidthFactor.editingFinished.connect(self.bandwidthFactorEditingFinished)
+        self.trackFrequency.stateChanged.connect(self.trackFrequencyStateChanged)
+        self.trackSpan.stateChanged.connect(self.trackSpanStateChanged)
+        self.vnaModel.currentIndexChanged[str].connect(self.vnaModelCurrentIndexChanged)
+
+        self.sampleInterval.setValue(self.config.sample_interval)
+        self.bandwidthFactor.setValue(self.config.bandwidth_factor)
+        self.trackFrequency.setChecked(bool(self.config.track_frequency))
+        self.trackSpan.setChecked(bool(self.config.track_span))
+        self.vnaModel.setCurrentText(str(self.config.model))
 
     def keyPressEvent(self, event):
         event.ignore()
@@ -99,6 +110,23 @@ class ConfigWindow(
         segment = self.selectedSegment
         if segment is not None:
             segment.power = self.power.value()
+
+    def sampleIntervalEditingFinished(self):
+        value = self.sampleInterval.value()
+        self.config.sample_interval = value
+
+    def bandwidthFactorEditingFinished(self):
+        value = self.bandwidthFactor.value()
+        self.config.bandwidth_factor = value
+
+    def trackFrequencyStateChanged(self, value):
+        self.config.track_frequency = value
+
+    def trackSpanStateChanged(self, value):
+        self.config.track_span = value
+
+    def vnaModelCurrentIndexChanged(self, value):
+        self.config.model = value
 
     def updateSegmentWidgets(self):
         segment = self.selectedSegment
