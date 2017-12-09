@@ -217,8 +217,8 @@ class Simulated:
             def fn(t):
                 return math.sin(t*2.0*math.pi/period)*deviation + center
             return fn
-        self.frequencies = [make_sin(2.5e9, 5e6, 5.0), make_sin(4.529e9, 4e6, 6.0)]
-        self.bandwidths = [make_sin(500e3, 20, 7.0), make_sin(300e3, 10, 8.0)]
+        self.frequencies = [make_sin(2.5e9, 0.055e6, 5.0), make_sin(4.529e9, 0.04e6, 6.0)]
+        self.bandwidths = [make_sin(500e3, 50e3, 10.0), make_sin(300e3, 30e3, 12.0)]
 
     def supports_markers(self):
         return False
