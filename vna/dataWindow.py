@@ -1,8 +1,9 @@
-from PyQt5.QtCore import Qt, QVariant
+from PyQt5.QtCore import Qt, QVariant, QTime
 from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.uic import loadUiType
 import pyqtgraph as pg
 import numpy as np
+import array
 from utils import float_to_si, getResourcePath
 
 DataWindowUi, DataWindowBase = loadUiType(
@@ -20,11 +21,11 @@ class DataWindow(
         # Create plots
         self.frequencyPlot = pg.PlotItem(title="Frequency")
         self.frequencyPlot.setLabel("left", "change in Frequency", "Hz")
-        self.frequencyPlot.setLabel("bottom", "Sample", "")
+        self.frequencyPlot.setLabel("bottom", "Time (s)", "")
 
         self.qFactorPlot = pg.PlotItem(title="Q factor")
         self.qFactorPlot.setLabel("left", "change in Q factor")
-        self.qFactorPlot.setLabel("bottom", "Sample", "")
+        self.qFactorPlot.setLabel("bottom", "Time (s)", "")
 
         self.graph.addItem(self.frequencyPlot, 0, 0)
         self.graph.addItem(self.qFactorPlot, 1, 0)
@@ -63,16 +64,17 @@ class DataWindow(
         self.resetSegments.clicked.connect(self.resetSegmentsPressed)
         self.forceRetrack.clicked.connect(self.forceRetrackPressed)
         self.segmentTable.itemClicked.connect(self.segmentTableClicked)
+        self.historicalDuration.timeChanged.connect(self.historicalDurationChanged)
 
         self.lastSample = None
-        self.maxSamples = 40
-        self.frequencyQueue = np.full((segmentCount, self.maxSamples), np.nan)
-        self.qFactorQueue = np.full((segmentCount, self.maxSamples), np.nan)
-        self.sampleIndexQueue = np.zeros(self.maxSamples)
+        self.maxSamples = 100
+        self.historicalSeconds = 0
+        self.historicalDurationChanged(self.historicalDuration.time())
+        self.frequencyBuffers = [array.array('f') for n in range(segmentCount)]
+        self.qFactorBuffers = [array.array('f') for n in range(segmentCount)]
+        self.timeBuffer = array.array('f')
         self.frequencyOffset = np.zeros(segmentCount)
         self.qFactorOffset = np.zeros(segmentCount)
-        self.sampleQueueRoll = 0
-        self.nextSampleIndex = 0
 
     def zeroOffsetClicked(self):
         if self.lastSample:
@@ -109,28 +111,35 @@ class DataWindow(
                 self.qFactorQueue[row] = np.nan
             self.instrument.set_segment_enabled(row, checked)
 
-    def addSample(self, time, sample):
-        freq = np.array(sample.f0, dtype=np.float)
-        qfac = np.array(sample.q, dtype=np.float)
+    def historicalDurationChanged(self, time):
+        self.historicalSeconds = QTime(0,0).secsTo(time)
 
-        self.frequencyQueue[:, self.sampleQueueRoll] = freq
-        self.qFactorQueue[:, self.sampleQueueRoll] = qfac
-        self.sampleIndexQueue[self.sampleQueueRoll] = self.nextSampleIndex
-        self.nextSampleIndex += 1
-        self.sampleQueueRoll += 1
-        if self.sampleQueueRoll == self.maxSamples:
-            self.sampleQueueRoll = 0
+    def addSample(self, time, sample):
+        for freq, frequencyBuffer in zip(sample.f0, self.frequencyBuffers):
+            frequencyBuffer.append(freq)
+
+        for qfac, qFactorBuffer in zip(sample.q, self.qFactorBuffers):
+            qFactorBuffer.append(qfac)
+
+        self.timeBuffer.append(time)
+
         self.lastSample = sample
 
     def refresh(self):
-        freq = np.roll(self.frequencyQueue, -self.sampleQueueRoll, axis=1)
-        qfac = np.roll(self.qFactorQueue, -self.sampleQueueRoll, axis=1)
-        idxs = np.roll(self.sampleIndexQueue, -self.sampleQueueRoll)
+        interval = self.instrument.cfg.sample_interval
+        bufferlen = len(self.timeBuffer)
+        if not bufferlen:
+            return
+        start = max(bufferlen-int(self.historicalSeconds/interval), 0)
+        sample_skip = max((bufferlen-start)//self.maxSamples, 1)
+        times = self.timeBuffer[start::sample_skip]
 
         for i in range(self.frequencyOffset.size):
             if self.enabledSegments[i]:
-                self.frequencyPlotData[i].setData(idxs, freq[i]-self.frequencyOffset[i])
-                self.qFactorPlotData[i].setData(idxs, qfac[i]-self.qFactorOffset[i])
+                freqs = np.array(self.frequencyBuffers[i][start::sample_skip])
+                qfacs = np.array(self.qFactorBuffers[i][start::sample_skip])
+                self.frequencyPlotData[i].setData(times, freqs-self.frequencyOffset[i])
+                self.qFactorPlotData[i].setData(times, qfacs-self.qFactorOffset[i])
             else:
                 self.frequencyPlotData[i].setData([], [])
                 self.qFactorPlotData[i].setData([], [])
