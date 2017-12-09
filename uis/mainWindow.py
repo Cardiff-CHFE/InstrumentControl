@@ -159,6 +159,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.instrumentTabs.addTab(widget, name)
             self.updateTimer.start(500)
             self.updateSampleButtons(self.samplesList.currentIndex())
+            self.configureInstruments.setEnabled(False)
         else:
             self.running = False
             self.backend.stop()
@@ -166,6 +167,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.recordButton.setEnabled(False)
             self.instrumentTabs.clear()
             self.updateSampleButtons(self.samplesList.currentIndex())
+            self.configureInstruments.setEnabled(True)
 
     def recordButtonClicked(self, recording):
         index = self.samplesList.currentIndex()
