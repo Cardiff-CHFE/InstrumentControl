@@ -165,7 +165,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QListView" name="segments"/>
+          <widget class="QListWidget" name="segments"/>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -178,6 +178,9 @@
            </item>
            <item>
             <widget class="QPushButton" name="removeSegment">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Remove segment</string>
              </property>

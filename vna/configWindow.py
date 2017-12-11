@@ -2,8 +2,6 @@ from utils import getResourcePath
 from PyQt5.QtCore import Qt, QAbstractProxyModel, QModelIndex
 # from PyQt5.QtWidgets import
 from PyQt5.uic import loadUiType
-from keyValueModel import KeyValueModel
-from schemaDelegate import SchemaDelegate
 from .config import Segment
 
 ConfigWindowUi, ConfigWindowBase = loadUiType(getResourcePath('ui/vnaConfigWindow.ui'))
@@ -17,18 +15,18 @@ class ConfigWindow(
 
         self._selectedSegment = None
         self.config = vnaConfig.clone()
-        self.configModel = KeyValueModel(self.config)
-        self.segments.setModel(self.configModel)
-        self.segments.setRootIndex(self.configModel.indexOf(self.config.segments, 0))
-        self.segments.setModelColumn(0)
-        self.segmentsDelegate = SchemaDelegate()
-        self.segments.setItemDelegate(self.segmentsDelegate)
-        self.segments.selectionModel().currentChanged.connect(self.onCurrentChanged)
-        self.removeSegment.setEnabled(len(self.config.segments)>0)
+        self.segments.addItems(self.config.segments.keys())
+        for i in range(self.segments.count()):
+            self.segments.item(i).setFlags(Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled)
 
-        self.configModel.dataChanged.connect(self.onModelDataChanged)
-        self.addSegment.clicked.connect(self.onAddSegment)
-        self.removeSegment.clicked.connect(self.onRemoveSegment)
+        self.segments.currentRowChanged.connect(self.segmentsRowChanged)
+        self.segments.itemChanged.connect(self.segmentsItemChanged)
+        self.addSegment.clicked.connect(self.addSegmentClicked)
+        self.removeSegment.clicked.connect(self.removeSegmentClicked)
+        if len(self.config.segments):
+            self.segments.setCurrentRow(0)
+            self.segmentsRowChanged(0)
+
         self.f0.editingFinished.connect(self.f0EditingFinished)
         self.span.editingFinished.connect(self.spanEditingFinished)
         self.points.editingFinished.connect(self.pointsEditingFinished)
@@ -49,67 +47,71 @@ class ConfigWindow(
     def keyPressEvent(self, event):
         event.ignore()
 
-    def onModelDataChanged(self, topLeft, bottomRight, roles):
-        value = self.configModel.valueOf(topLeft)
-        parent = value.parent
-        if isinstance(parent, Segment):
-            if parent == self.selectedSegment:
-                self.updateSegmentWidgets()
+    def segmentsRowChanged(self, row):
+        try:
+            self.selectedSegment = self.config.segments.child(row)
+        except IndexError:
+            self.selectedSegment = None
 
-    def onCurrentChanged(self, current, prev):
-        value = current.model().valueOf(current)
-        assert(isinstance(value, Segment))
-        self.selectedSegment = value
+    def segmentsItemChanged(self, item):
+        widget = item.listWidget()
+        row = widget.row(item)
+        segments = self.config.segments
+        if segments.childKey(row) != item.text():
+            segments.setChildKey(row, item.text())
 
-    def onAddSegment(self):
-        self.config.segments.addChild({
+    def addSegmentClicked(self):
+        keyfmt = 'Mode {}'
+        idx = 0
+        while True:
+            key = keyfmt.format(idx)
+            if key not in self.config.segments:
+                break
+            idx += 1
+        
+        self.config.segments[key] = {
             'f0': 2.500E+09,
             'span': 20E+06,
             'points': 201,
             'ifbw': 10e3,
             'power': 0.0
-        })
-        self.removeSegment.setEnabled(True)
+        }
+        item = QListWidgetItem(key)
+        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled)
+        self.segments.addItem(item)
+        row = len(self.config.segments)-1
+        self.segments.setCurrentRow(row)
+        self.segmentsRowChanged(row)
 
-    def onRemoveSegment(self):
-        value = self.selectedSegment
-        if value is not None:
-            row = value.row
-            self.config.segments.removeChild(row)
-            if row > 0:
-                value = self.config.segments.child(row-1)
-                index = self.configModel.indexOf(value, 1)
-                self.segments.setCurrentIndex(index)
-                # self.segments.setFocus()
-                self.selectedSegment = value
-            else:
-                self.selectedSegment = None
-                self.removeSegment.setEnabled(False)
+
+    def removeSegmentClicked(self):
+        row = self.segments.currentRow()
+        self.config.segments.removeChild(row)
+        self.segments.takeItem(row)
+        if row >= len(self.config.segments):
+            row = len(self.config.segments)-1
+
+        if row >= 0:
+            self.segments.setFocus()
+            self.segments.setCurrentRow(row)
+            self.segmentsRowChanged(row)
+        else:
+            self.selectedSegment = None
 
     def f0EditingFinished(self):
-        segment = self.selectedSegment
-        if segment is not None:
-            segment.f0 = self.f0.value()
+        self.selectedSegment.f0 = self.f0.value()
 
     def spanEditingFinished(self):
-        segment = self.selectedSegment
-        if segment is not None:
-            segment.span = self.span.value()
+        self.selectedSegment.span = self.span.value()
 
     def pointsEditingFinished(self):
-        segment = self.selectedSegment
-        if segment is not None:
-            segment.points = self.points.value()
+        self.selectedSegment.points = self.points.value()
 
     def ifbwEditingFinished(self):
-        segment = self.selectedSegment
-        if segment is not None:
-            segment.ifbw = self.ifbw.value()
+        self.selectedSegment.ifbw = self.ifbw.value()
 
     def powerEditingFinished(self):
-        segment = self.selectedSegment
-        if segment is not None:
-            segment.power = self.power.value()
+        self.selectedSegment.power = self.power.value()
 
     def sampleIntervalEditingFinished(self):
         value = self.sampleInterval.value()
@@ -131,12 +133,14 @@ class ConfigWindow(
     def updateSegmentWidgets(self):
         segment = self.selectedSegment
         if segment is not None:
-            print("Data changed")
+            self.removeSegment.setEnabled(True)
             self.f0.setValue(segment.f0)
             self.span.setValue(segment.span)
             self.points.setValue(segment.points)
             self.ifbw.setValue(segment.ifbw)
             self.power.setValue(segment.power)
+        else:
+            self.removeSegment.setEnabled(False)
 
     def enableSegmentWidgets(self, enabled):
         self.f0.setEnabled(enabled)

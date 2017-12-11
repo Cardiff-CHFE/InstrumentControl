@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
+    <width>431</width>
     <height>228</height>
    </rect>
   </property>
@@ -47,7 +47,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QListView" name="instrumentList">
+        <widget class="QListWidget" name="instrumentList">
          <property name="toolTip">
           <string>Double click instruments to edit them</string>
          </property>
@@ -63,11 +63,14 @@
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QPushButton" name="addInstrument">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="toolTip">
             <string>Opens a dialog to configure a new instrument</string>
            </property>
            <property name="text">
-            <string>Add new instrument</string>
+            <string>Add new instrument (to be implemented)</string>
            </property>
           </widget>
          </item>
