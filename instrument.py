@@ -48,9 +48,9 @@ class Instrument(object):
     def setup(self):
         """Override this to setup the instrument"""
 
-    def sample(self, elapsed):
+    def sample(self):
         """Override this to acquire/write a sample"""
-        return []
+        return None
 
     def cleanup(self):
         """Override this to close the instrument cleanly"""
@@ -71,10 +71,9 @@ class Instrument(object):
                     self.commandqueue.get_nowait()(self) # Get and execute command
                 except queue.Empty:
                     break
-            current_time = time.time()
-            s = self.sample(current_time)
-            if s is not None:
-                self.queue.put((current_time, s))
+            sample = self.sample()
+            if sample is not None:
+                self.queue.put(sample)
         self.cleanup()
 
     def start(self):

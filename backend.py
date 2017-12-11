@@ -3,6 +3,7 @@ import time
 import csv
 import os
 import os.path
+from datetime import datetime, timedelta, timezone
 
 class InstrumentException(Exception):
     pass
@@ -34,7 +35,7 @@ class Backend(object):
             driver_cls = self.instrument_drivers[instcfg.type_]
             self.instruments[name] = driver_cls(instcfg)
 
-        self.start_time = time.time()
+        self.start_time = datetime.now(timezone.utc)
         for name, inst in self.instruments.items():
             inst.start()
 
@@ -47,9 +48,9 @@ class Backend(object):
         exists = self.data_logger.open_files(self.instruments.keys(), self.datadir, sample_name)
         for ((name, inst), existing) in zip(self.instruments.items(), exists):
             if not existing:
-                self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
+                self.data_logger.write(name, ["Timestamp", "Time (s)"] + inst.get_headers())
         self.logging = True
-        self.log_time = time.time()
+        self.log_time = datetime.now(timezone.utc)
         #if self.config.max_samples > 0:
         #    self.remaining_samples = self.config.max_samples
         for inst in self.instruments.values():
@@ -66,12 +67,12 @@ class Backend(object):
             samples = inst.get_samples()
             if self.logging:
                 for s in samples:
-                    self.data_logger.write(name, [s[0]-self.log_time] + inst.format_sample(s[1]))
+                    self.data_logger.write(name, [s[0].timestamp(), (s[0]-self.log_time).total_seconds()] + inst.format_sample(s[1]))
             if name in fns:
                 for s in samples:
-                    fns[name](s[0]-self.start_time, s[1])
+                    fns[name]((s[0]-self.start_time).total_seconds(), s[1])
         if self.config.record_duration > 0.0 and self.logging:
-            if time.time() - self.log_time > self.config.record_duration:
+            if (datetime.now(timezone.utc) - self.log_time).total_seconds() > self.config.record_duration:
                 self.stop_logging()
                 return False
         return True

@@ -6,7 +6,7 @@ from scipy.optimize import curve_fit
 from scipy.stats import linregress
 import time
 import copy
-
+from datetime import datetime, timezone, timedelta
 
 class InstrumentError(RuntimeError):
     pass
@@ -233,7 +233,7 @@ class Simulated:
         pass
 
     def trigger(self, use_markers, force=False):
-        time.sleep(0.1)
+        time.sleep(0.001)
 
     def get_marker_data(self, marker=1, channel=1):
         raise NotImplementedError()
@@ -299,10 +299,11 @@ class Driver(Instrument):
         self.driver.autoscale()
         self.last_sample = None
 
-        self.next_call = time.time()
+        self.next_call = datetime.now(timezone.utc)
 
-    def sample(self, elapsed):
+    def sample(self):
         self.driver.trigger(self.cfg.use_markers)
+        sampletime = datetime.now(timezone.utc)
 
         data = Sample()
         if self.cfg.use_markers:
@@ -368,11 +369,13 @@ class Driver(Instrument):
                 self.driver.set_segments(self.cfg.segments)
                 self.driver.trigger(self.cfg.use_markers, force=True)
 
-        self.next_call += self.cfg.sample_interval
-        sleepytime = self.next_call - time.time()
+        # Sleep to use up remaining duration in sample_interval
+        self.next_call += timedelta(seconds=self.cfg.sample_interval)
+        sleepytime = (self.next_call - datetime.now(timezone.utc)).total_seconds()
         if sleepytime > 0.0:
             time.sleep(sleepytime)
-        return data
+
+        return sampletime, data
 
     def cleanup(self):
         self.driver.cleanup()
