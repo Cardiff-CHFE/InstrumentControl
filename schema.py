@@ -283,12 +283,13 @@ class BaseCollection(object):
         for _, value in self._data:
             value.dataModel = dataModel
 
-    def __repr__(self):
-        path = ""
-        parent = self.parent
-        while parent is not None:
-            path = parent.reprRow(self.row) + path
-        return path
+    # def __repr__(self):
+    #     path = ""
+    #     parent = self.parent
+    #     while parent is not None:
+    #         path = parent.reprRow(self.row) + path
+    #         parent = parent.parent
+    #     return path
 
 
 class PropertyInternal:
@@ -439,7 +440,8 @@ class MDict(BaseCollection, collections.MutableMapping):
         return self.childCount()
 
     def __str__(self):
-        return ""
+        items = ('{!r}: {!r}'.format(key, value) for key, value in self.items())
+        return "{{{}}}".format(', '.join(items))
 
     def serialize(self):
         data = {}
@@ -499,7 +501,7 @@ class MList(BaseCollection, collections.MutableSequence):
         return data
 
     def __str__(self):
-        return ""
+        return '[{}]'.format(', '.join(repr(child[1]) for child in self.children()))
 
     def dtypeForRow(self, row):
         return self.dtype
