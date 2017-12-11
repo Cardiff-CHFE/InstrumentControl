@@ -2,13 +2,14 @@
     "instruments": {
         "vna0": {
             "type": "vna",
+            "model": "S2VNA",
             "track_frequency": true,
             "track_span": true,
             "use_markers": false,
             "bandwidth_factor": 4.0,
             "segments":{
-                "TM010": {"f0": 2.5007E+09, "span": 1E+06, "points": 201, "ifbw": 1e3, "power": 0.0, "gnmp": 0.294, "type": "Electric"},
-                "TM011": {"f0": 4.529E+09, "span": 1E+06, "points": 201, "ifbw": 1e3, "power": 0.0, "gnmp": 0.962, "type": "Electric"}
+                "TM010": {"f0": 2.500E+09, "span": 20E+06, "points": 201, "ifbw": 10e3, "power": 0.0, "gnmp": 0.294, "type": "Electric"},
+                "TM011": {"f0": 4.54E+09, "span": 20E+06, "points": 201, "ifbw": 10e3, "power": 0.0, "gnmp": 0.962, "type": "Electric"}
             },
             "cavity": "Gandalf",
             "cavity_volume": 265904.402,
@@ -18,5 +19,5 @@
     "samples": [
         "Empty Cavity", "Empty Tube", "CoRu", "MC Co20", "MC Co20_2", "MC Co50",
         "MC Co20 spent", "MC Fe20", "SiO2 20", "SiO2 50", "SiO2 50 spent"
-    ]
+    ],
 }
