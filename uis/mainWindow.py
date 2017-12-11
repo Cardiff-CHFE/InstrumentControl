@@ -114,6 +114,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.updateConfigWidgets(self.backend.config)
             self.configModified = True
 
+    def savePrompt(self):
+        if self.configModified:
+            ret = QMessageBox.warning(self, "Unsaved changes", "The configuration has been modified. Do you want to save first?",
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            if ret == QMessageBox.Save:
+                self.saveConfig()
+                return True
+            elif ret == QMessageBox.Discard:
+                return True
+            elif ret == QMessageBox.Cancel:
+                return False
+        else:
+            return True
+
     def registerInsturmentType(self, name, dataWindow, configWindow=None):
         self.instrumentDataWindows[name] = dataWindow
         if configWindow is not None:
@@ -197,42 +211,42 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.samplesList.takeItem(row)
         self.configModified = True
 
-            self.samplesList.setFocus()
+        self.samplesList.setFocus()
 
-            if row >= len(samples):
-                row = len(samples)-1
-            if row < 0:
+        if row >= len(samples):
+            row = len(samples)-1
+        if row < 0:
             self.updateSampleButtons(row)
-                return
+            return
 
         self.setSampleIndex(row)
 
     def moveUpClicked(self):
         samples = self.backend.config.samples
         row = self.samplesList.currentRow()
-            if row == 0 or row >= len(samples):
-                return
+        if row == 0 or row >= len(samples):
+            return
         item = samples.pop(row)
         samples.insert(row-1, item)
         listItem = self.samplesList.takeItem(row)
         self.samplesList.insertItem(row-1, listItem)
         self.configModified = True
 
-            self.samplesList.setFocus()
+        self.samplesList.setFocus()
         self.setSampleIndex(row-1)
 
     def moveDownClicked(self):
         samples = self.backend.config.samples
         row = self.samplesList.currentRow()
-            if row+1 >= len(samples):
-                return
+        if row+1 >= len(samples):
+            return
         item = samples.pop(row)
         samples.insert(row+1, item)
         listItem = self.samplesList.takeItem(row)
         self.samplesList.insertItem(row+1, listItem)
         self.configModified = True
 
-            self.samplesList.setFocus()
+        self.samplesList.setFocus()
         self.setSampleIndex(row+1)
 
     def samplesListItemChanged(self, item):
@@ -268,5 +282,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.setSampleIndex(row)
 
     def closeEvent(self, event):
-        self.backend.stop()
-        self.updateTimer.stop()
+        if self.savePrompt():
+            self.backend.stop()
+            self.updateTimer.stop()
+        else:
+            event.ignore()
