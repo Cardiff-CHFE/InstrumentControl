@@ -35,6 +35,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.runButton.clicked[bool].connect(self.runButtonClicked)
         self.recordButton.clicked[bool].connect(self.recordButtonClicked)
         self.recordDuration.valueChanged.connect(self.recordDurationChanged)
+        self.recordSamples.valueChanged.connect(self.recordSamplesChanged)
 
         self.addSample.clicked.connect(self.addSampleClicked)
         self.removeSample.clicked.connect(self.removeSampleClicked)
@@ -191,6 +192,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def recordDurationChanged(self, val):
         self.backend.config.record_duration = val
+        self.configModified = True
+
+    def recordSamplesChanged(self, val):
+        self.backend.config.record_samples = val
+        self.configModified = True
 
     def addSampleClicked(self):
         samples = self.backend.config.samples

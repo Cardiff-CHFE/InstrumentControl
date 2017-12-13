@@ -48,11 +48,13 @@ class Backend(object):
         exists = self.data_logger.open_files(self.instruments.keys(), self.datadir, sample_name)
         for ((name, inst), existing) in zip(self.instruments.items(), exists):
             if not existing:
-                self.data_logger.write(name, ["Timestamp", "Time (s)"] + inst.get_headers())
+                self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
         self.logging = True
         self.log_time = datetime.now(timezone.utc)
-        #if self.config.max_samples > 0:
-        #    self.remaining_samples = self.config.max_samples
+        if self.config.record_samples > 0:
+            self.remaining_samples = self.config.record_samples
+        else:
+            self.remaining_samples = -1
         for inst in self.instruments.values():
             inst.on_record_start()
 
@@ -67,10 +69,19 @@ class Backend(object):
             samples = inst.get_samples()
             if self.logging:
                 for s in samples:
-                    self.data_logger.write(name, [s[0].timestamp(), (s[0]-self.log_time).total_seconds()] + inst.format_sample(s[1]))
+                    if self.remaining_samples != 0 or name != self.config.master_instrument:
+                        self.data_logger.write(name, [s[0].timestamp()] + inst.format_sample(s[1]))
+                        if name == self.config.master_instrument:
+                            self.remaining_samples -= 1
+                    
             if name in fns:
                 for s in samples:
                     fns[name]((s[0]-self.start_time).total_seconds(), s[1])
+
+        if self.logging and self.remaining_samples == 0:
+            self.stop_logging()
+            return False
+
         if self.config.record_duration > 0.0 and self.logging:
             if (datetime.now(timezone.utc) - self.log_time).total_seconds() > self.config.record_duration:
                 self.stop_logging()

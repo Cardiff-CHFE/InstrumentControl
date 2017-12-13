@@ -1,5 +1,5 @@
 import os
-from schema import TObject, TDict, TUnion, TList, TString, TFloat
+from schema import TObject, TDict, TUnion, TList, TString, TFloat, TInt
 import json
 
 class ConfigLoader():
@@ -8,6 +8,7 @@ class ConfigLoader():
             datadir = TString()
             instruments = TDict(TUnion({}))
             record_duration = TFloat()
+            record_samples = TInt()
             samples = TList(TString())
             master_instrument = TString()
 
