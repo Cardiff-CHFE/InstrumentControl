@@ -20,11 +20,22 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="zeroOffset">
-       <property name="text">
-        <string>Zero offset</string>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QPushButton" name="zeroOffset">
+         <property name="text">
+          <string>Zero offset</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clearOffset">
+         <property name="text">
+          <string>Clear offset</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="Line" name="line_2">
@@ -96,36 +107,47 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Duration to display (hh:mm:ss):</string>
+        <string>Duration to display:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTimeEdit" name="historicalDuration">
-       <property name="minimumTime">
-        <time>
-         <hour>0</hour>
-         <minute>0</minute>
-         <second>1</second>
-        </time>
-       </property>
-       <property name="currentSection">
-        <enum>QDateTimeEdit::HourSection</enum>
-       </property>
-       <property name="displayFormat">
-        <string>HH:mm:ss</string>
-       </property>
-       <property name="timeSpec">
-        <enum>Qt::LocalTime</enum>
-       </property>
-       <property name="time">
-        <time>
-         <hour>0</hour>
-         <minute>0</minute>
-         <second>5</second>
-        </time>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QDoubleSpinBox" name="displayDuration">
+         <property name="maximum">
+          <double>999999.989999999990687</double>
+         </property>
+         <property name="value">
+          <double>20.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="displayDurationType">
+         <item>
+          <property name="text">
+           <string>seconds</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>minutes</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>hours</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>samples</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <spacer name="verticalSpacer">
