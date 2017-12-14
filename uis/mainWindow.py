@@ -7,6 +7,8 @@ from uis.editInstrumentsDialog import EditInstrumentsDialog
 import sys
 import os
 
+from patch import useNativeDialog
+
 MainWindowUI, MainWindowBase = loadUiType(getResourcePath('ui/mainWindow.ui'))
 
 
@@ -47,9 +49,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.running = False
 
     def newConfig(self):
-        #TODO warn if modified
-
-        cfgfile, _ = QFileDialog.getSaveFileName(self, "Select File", filter="Configuration files (*.json)")
+        kwargs = {} if useNativeDialog else {'options': QFileDialog.DontUseNativeDialog}
+        cfgfile, _ = QFileDialog.getSaveFileName(self, "Select File", filter="Configuration files (*.json)", **kwargs)
+        if cfgfile == '':
+            return
         try:
             with open(cfgfile, 'w') as fp:
                 config = self.configLoader.loadData({
@@ -75,6 +78,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.updateConfigWidgets(self.backend.config)
                 self.cfgfile = cfgfile
                 self.configLoader.saveFile(fp, self.backend.config)
+                self.editInstruments()
         except (FileNotFoundError, ValueError) as err:
             msg = QErrorMessage()
             msg.setWindowTitle("Config File Error")
@@ -83,7 +87,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def openConfig(self, cfgfile=None):
         if cfgfile is None:
-            cfgfile, _ = QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)")
+            kwargs = {} if useNativeDialog else {'options': QFileDialog.DontUseNativeDialog}
+            cfgfile, _ = QFileDialog.getOpenFileName(self, "Select File", filter="Configuration files (*.json)", **kwargs)
+        if cfgfile == '':
+            return
         try:
             with open(cfgfile, 'r') as fp:
                 config = self.configLoader.loadFile(fp)
@@ -103,15 +110,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.configLoader.saveFile(fp, self.backend.config)
 
     def saveConfigAs(self):
-        cfgfile, _ = QFileDialog.getSaveFileName(self, "Select File", filter="Configuration files (*.json)")
-        with open(cfgfile, 'r') as fp:
+        kwargs = {} if useNativeDialog else {'options': QFileDialog.DontUseNativeDialog}
+        cfgfile, _ = QFileDialog.getSaveFileName(self, "Select File", filter="Configuration files (*.json)", **kwargs)
+        if cfgfile == '':
+            return
+        with open(cfgfile, 'w') as fp:
             self.configLoader.saveFile(fp, self.backend.config)
             self.cfgfile = cfgfile
 
     def editInstruments(self):
-        editInstrumentDialog = EditInstrumentsDialog(self.backend.config, self.instrumentIcons, self.instrumentConfigWindows)
+        cfgdir = os.path.dirname(self.cfgfile)
+        editInstrumentDialog = EditInstrumentsDialog(self.backend.config, self.instrumentIcons, self.instrumentConfigWindows, cfgdir)
         if editInstrumentDialog.exec_() == QDialog.Accepted:
-            self.backend.set_config(editInstrumentDialog.config, os.path.dirname(self.cfgfile))
+            self.backend.set_config(editInstrumentDialog.config, cfgdir)
             self.updateConfigWidgets(self.backend.config)
             self.configModified = True
 
@@ -140,6 +151,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def enableConfigWidgets(self):
         self.runButton.setEnabled(True)
         self.configureInstruments.setEnabled(True)
+        self.recordDuration.setEnabled(True)
+        self.recordSamples.setEnabled(True)
         self.samplesList.setEnabled(True)
         self.addSample.setEnabled(True)
         self.actionSaveConfig.setEnabled(True)
@@ -173,6 +186,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.updateTimer.start(500)
             self.updateSampleButtons(self.samplesList.currentRow())
             self.configureInstruments.setEnabled(False)
+            self.actionNewConfig.setEnabled(False)
+            self.actionOpenConfig.setEnabled(False)
+            self.actionSaveConfigAs.setEnabled(False)
         else:
             self.running = False
             self.backend.stop()
@@ -181,6 +197,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.instrumentTabs.clear()
             self.updateSampleButtons(self.samplesList.currentRow())
             self.configureInstruments.setEnabled(True)
+            self.actionNewConfig.setEnabled(True)
+            self.actionOpenConfig.setEnabled(True)
+            self.actionSaveConfigAs.setEnabled(True)
 
     def recordButtonClicked(self, recording):
         if recording:
