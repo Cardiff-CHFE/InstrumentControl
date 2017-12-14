@@ -14,7 +14,7 @@ class Config(TObject):
     model = TString()
     resource = TString()
     track_frequency = TBool(True)
-    track_span = TBool()
+    track_span = TBool(True)
     use_markers = TBool()
     bandwidth_factor = TFloat(4.0)
     segments = TDict(Segment)
