@@ -11,9 +11,11 @@ class ConfigWindow(
         ConfigWindowBase, ConfigWindowUi):
     def __init__(self, vnaConfig, parent=None):
         ConfigWindowBase.__init__(self, parent)
+        self._selectedSegment = None
+        
         self.setupUi(self)
 
-        self._selectedSegment = None
+        
         self.config = vnaConfig.clone()
         self.segments.addItems(self.config.segments.keys())
         for i in range(self.segments.count()):
