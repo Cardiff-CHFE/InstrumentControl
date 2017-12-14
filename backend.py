@@ -15,11 +15,11 @@ class Backend(object):
         self.config = None
         self.data_logger = DataLogger()
         self.logging = False
-        self.datadir = None
+        self.config_dir = None
 
     def set_config(self, value, directory):
         self.config = value
-        self.datadir = os.path.normpath(os.path.join(directory, self.config.datadir))
+        self.config_dir = directory
 
         if self.config.master_instrument == '' and len(self.config.instruments):
             for name, inst in self.config.instruments.items():
@@ -45,12 +45,13 @@ class Backend(object):
         self.instruments = {}
 
     def start_logging(self, sample_name):
-        exists = self.data_logger.open_files(self.instruments.keys(), self.datadir, sample_name)
+        datadir = os.path.normpath(os.path.join(self.config_dir, self.config.datadir))
+        exists = self.data_logger.open_files(self.instruments.keys(), datadir, sample_name)
         for ((name, inst), existing) in zip(self.instruments.items(), exists):
             if not existing:
-                self.data_logger.write(name, ["Time (s)"] + inst.get_headers())
+                self.data_logger.write(name, ["Timestamp", "Time (s)"] + inst.get_headers())
         self.logging = True
-        self.log_time = datetime.now(timezone.utc)
+        self.log_time = None
         if self.config.record_samples > 0:
             self.remaining_samples = self.config.record_samples
         else:
@@ -70,9 +71,11 @@ class Backend(object):
             if self.logging:
                 for s in samples:
                     if self.remaining_samples != 0 or name != self.config.master_instrument:
-                        self.data_logger.write(name, [s[0].timestamp()] + inst.format_sample(s[1]))
                         if name == self.config.master_instrument:
                             self.remaining_samples -= 1
+                            if self.log_time is None:
+                                self.log_time = s[0]
+                        self.data_logger.write(name, [s[0].timestamp(), (s[0]-self.log_time).total_seconds()] + inst.format_sample(s[1]))
                     
             if name in fns:
                 for s in samples:
