@@ -1,6 +1,6 @@
 from utils import getResourcePath
 from PyQt5.QtCore import Qt, QAbstractProxyModel, QModelIndex
-# from PyQt5.QtWidgets import
+from PyQt5.QtWidgets import QListWidgetItem
 from PyQt5.uic import loadUiType
 from .config import Segment
 
