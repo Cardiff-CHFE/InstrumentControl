@@ -40,6 +40,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QCheckBox" name="periodicFlush">
+     <property name="text">
+      <string>Flush datafiles periodically (may slow down fast measurements)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

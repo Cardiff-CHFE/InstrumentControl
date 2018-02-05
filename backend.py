@@ -13,7 +13,7 @@ class Backend(object):
         self.instrument_drivers = {}
         self.instruments = {}
         self.config = None
-        self.data_logger = DataLogger()
+        self.data_logger = None
         self.logging = False
         self.config_dir = None
 
@@ -31,6 +31,8 @@ class Backend(object):
         self.instrument_drivers[name] = driver
 
     def start(self):
+        self.data_logger = DataLogger(self.config.flush_datafiles)
+
         for name, instcfg in self.config.instruments.items():
             driver_cls = self.instrument_drivers[instcfg.type_]
             self.instruments[name] = driver_cls(instcfg)
@@ -43,6 +45,9 @@ class Backend(object):
         for inst in self.instruments.values():
             inst.stop()
         self.instruments = {}
+        if self.logging:
+            self.stop_logging()
+        self.data_logger = None
 
     def start_logging(self, sample_name):
         datadir = os.path.normpath(os.path.join(self.config_dir, self.config.datadir))
@@ -93,9 +98,12 @@ class Backend(object):
 
 
 class DataLogger(object):
-    def __init__(self):
+    def __init__(self, doflush):
         self.files = {}
         self.writers = {}
+        self.last_write = {}
+        self.doflush = doflush
+        self.flushinterval = 10.0 # Seconds
 
     def open_files(self, names, datadir, sample_name):
         exists = []
@@ -111,6 +119,7 @@ class DataLogger(object):
             fp = open(fname, 'a', newline='')
             self.files[name] = fp
             self.writers[name] = csv.writer(fp)
+            self.last_write[name] = time.time()
         return exists
 
     def close_files(self):
@@ -121,3 +130,8 @@ class DataLogger(object):
 
     def write(self, name, data):
         self.writers[name].writerow(data)
+        if self.doflush and (time.time() - self.last_write[name] > self.flushinterval):
+            self.last_write[name] += self.flushinterval
+            fh = self.files[name]
+            fh.flush()
+            os.fsync(fh.fileno())

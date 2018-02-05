@@ -26,8 +26,10 @@ class EditInstrumentsDialog(EditInstrumentsDialogBase, EditInstrumentsDialogUI):
         self.instrumentList.itemDoubleClicked.connect(self.instrumentListDoubleClicked)
         self.datadir.editingFinished.connect(self.datadirEditingFinished)
         self.browseButton.clicked.connect(self.browseButtonClicked)
+        self.periodicFlush.stateChanged.connect(self.periodicFlushStateChanged)
 
         self.datadir.setText(self.config.datadir)
+        self.periodicFlush.setChecked(bool(self.config.flush_datafiles))
 
     def instrumentListDoubleClicked(self, item):
         instrumentName = item.text()
@@ -49,4 +51,7 @@ class EditInstrumentsDialog(EditInstrumentsDialogBase, EditInstrumentsDialogUI):
             relpath = os.path.relpath(dialog.selectedFiles()[0], self.configPath)
             self.datadir.setText(relpath)
             self.config.datadir = relpath
+
+    def periodicFlushStateChanged(self, value):
+        self.config.flush_datafiles = value == Qt.Checked
         

@@ -1,5 +1,5 @@
 import os
-from schema import TObject, TDict, TUnion, TList, TString, TFloat, TInt
+from schema import TObject, TDict, TUnion, TList, TString, TFloat, TInt, TBool
 import json
 
 class ConfigLoader():
@@ -11,6 +11,7 @@ class ConfigLoader():
             record_samples = TInt()
             samples = TList(TString())
             master_instrument = TString()
+            flush_datafiles = TBool()
 
         self.schema = Configuration
 
