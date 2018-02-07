@@ -65,6 +65,8 @@ class Backend(object):
             inst.on_record_start()
 
     def stop_logging(self):
+        if not self.logging:
+            return
         self.logging = False
         self.data_logger.close_files()
         for inst in self.instruments.values():
