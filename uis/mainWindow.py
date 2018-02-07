@@ -193,6 +193,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.running = False
             self.backend.stop()
             self.updateTimer.stop()
+            self.recordButton.setChecked(False)
             self.recordButton.setEnabled(False)
             self.instrumentTabs.clear()
             self.updateSampleButtons(self.samplesList.currentRow())
