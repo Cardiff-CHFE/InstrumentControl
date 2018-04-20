@@ -108,6 +108,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if self.cfgfile is not None:
             with open(self.cfgfile, 'w') as fp:
                 self.configLoader.saveFile(fp, self.backend.config)
+                self.configModified = False
 
     def saveConfigAs(self):
         kwargs = {} if useNativeDialog else {'options': QFileDialog.DontUseNativeDialog}
@@ -117,6 +118,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         with open(cfgfile, 'w') as fp:
             self.configLoader.saveFile(fp, self.backend.config)
             self.cfgfile = cfgfile
+            self.configModified = False
 
     def editInstruments(self):
         cfgdir = os.path.dirname(self.cfgfile)
