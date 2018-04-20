@@ -5,6 +5,7 @@ import pyqtgraph as pg
 import numpy as np
 import array
 from utils import float_to_si, getResourcePath
+from .driver import lorentz_fn
 
 DataWindowUi, DataWindowBase = loadUiType(
     getResourcePath('ui/vnaDataWindow.ui'))
@@ -29,6 +30,15 @@ class DataWindow(
 
         self.graph.addItem(self.frequencyPlot, 0, 0)
         self.graph.addItem(self.qFactorPlot, 1, 0)
+
+        self.fitPlot = pg.PlotItem(title="Realtime fit")
+        self.fitPlot.setLabel("left", "Amplitude")
+        self.fitPlot.setLabel("bottom", "Frequency")
+
+        self.measuredPlotData = self.fitPlot.plot(pen='r', connect='finite')
+        self.fitPlotData = self.fitPlot.plot(pen='g', connect='finite')
+
+        self.fitGraph.addItem(self.fitPlot, 0, 0)
 
         segmentCount = len(self.instrument.cfg.segments)
         colours = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
@@ -175,3 +185,13 @@ class DataWindow(
             for row, il in enumerate(self.lastSample.il):
                 if il is not None:
                     self.segmentTable.item(row, 3).setText(float_to_si(il, 6) + "dB")
+
+            freq = self.lastSample.freq[0]
+            ampl = self.lastSample.ampl[0]
+            f0 = self.lastSample.f0[0]
+            bw = self.lastSample.bw[0]
+            pmax = 10.0**(self.lastSample.il[0]/20.0)
+
+            self.measuredPlotData.setData(freq, 20*np.log10(ampl))
+            self.fitPlotData.setData(freq, 20*np.log10(lorentz_fn(freq, f0, bw, pmax)))
+
