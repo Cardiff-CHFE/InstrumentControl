@@ -332,8 +332,8 @@ class Driver(Instrument):
                     a = ampl[start:seg.points+start]
                     start += seg.points
                     try:
-                        bw, f0, q, il = lorentz_fit(f,a)
-                        data.add_segment(bw, f0, q, il, f, a)
+                        bw, f0, q, il, skew = lorentz_fit(f,a)
+                        data.add_segment(bw, f0, q, il, skew, freq=f, ampl=a)
                     except (RuntimeError, ValueError):
                         lost_track = True
                         if self.cfg.track_freq and self.cfg.track_enabled:
@@ -460,14 +460,16 @@ class Sample(object):
         self.f0 = []
         self.q = []
         self.il = []
+        self.skew = []
         self.freq = []
         self.ampl = []
 
-    def add_segment(self, bw, f0, q, il, freq=None, ampl=None):
+    def add_segment(self, bw, f0, q, il, skew=0.0, freq=None, ampl=None):
         self.bw.append(bw)
         self.f0.append(f0)
         self.q.append(q)
         self.il.append(il)
+        self.skew.append(skew)
         self.freq.append(freq)
         self.ampl.append(ampl)
 
@@ -487,7 +489,7 @@ class Sample(object):
         return True
 
 
-def track_window(center, span, f0, bw, center_err=0.8,
+def track_window(center, span, f0, bw, center_err=0.5,
                  span_err=0.3, bw_factor=8.0):
     ferr = math.fabs(center-f0) + bw/2 #Ensure +- bw markers stay within
                                        #center_err of window
@@ -497,10 +499,10 @@ def track_window(center, span, f0, bw, center_err=0.8,
     retracks = retracks or span/(bw*bw_factor) > 1 + span_err
     return retrackf, retracks
 
-def lorentz_fn(x, f0, bw, pmax):
-    return pmax/np.sqrt(1 + (4*((x-f0)/bw)**2))
+def lorentz_fn(x, f0, bw, pmax, skew):
+    return (pmax + skew*(x-f0))/np.sqrt(1 + (4*((x-f0)/bw)**2))
 
-def lorentz_fit(freq, ampl, f0=0.5, bw=0.5, pmax=1.0):
+def lorentz_fit(freq, ampl, f0=0.5, bw=0.5, pmax=1.0, skew=0.0):
 
     freq = np.array(freq)
     ampl = np.array(ampl)
@@ -513,9 +515,10 @@ def lorentz_fit(freq, ampl, f0=0.5, bw=0.5, pmax=1.0):
     fspan = maxf-minf
     normf = (freq-minf)/fspan
     a1=0.0
-    (f0, bw, pmax), pcov = curve_fit(lorentz_fn, normf, norma,
-                                     (f0, bw, pmax))
+    (f0, bw, pmax, skew), pcov = curve_fit(lorentz_fn, normf, norma,
+                                     (f0, bw, pmax, skew))
     f0 = (f0*fspan)+minf
     bw = np.fabs(bw)*fspan
+    skew = (skew/fspan)*maxa
     pmax = 20*np.log10(pmax*maxa)
-    return bw, f0, f0/bw, pmax
+    return bw, f0, f0/bw, pmax, skew

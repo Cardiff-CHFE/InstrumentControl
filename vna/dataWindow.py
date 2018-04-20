@@ -190,8 +190,9 @@ class DataWindow(
             ampl = self.lastSample.ampl[0]
             f0 = self.lastSample.f0[0]
             bw = self.lastSample.bw[0]
+            skew = self.lastSample.skew[0]
             pmax = 10.0**(self.lastSample.il[0]/20.0)
 
             self.measuredPlotData.setData(freq, 20*np.log10(ampl))
-            self.fitPlotData.setData(freq, 20*np.log10(lorentz_fn(freq, f0, bw, pmax)))
+            self.fitPlotData.setData(freq, 20*np.log10(lorentz_fn(freq, f0, bw, pmax, skew)))
 
