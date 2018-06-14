@@ -66,6 +66,9 @@ class DataWindow(
             self.segmentTable.resizeColumnsToContents()
             self.segmentTable.resizeRowsToContents()
 
+        self.fitMode.addItems([s.name for s in self.instrument.cfg.segments])
+        self.fitMode.setCurrentIndex(0)
+
         # Bind signals
         self.zeroOffset.clicked.connect(self.zeroOffsetClicked)
         self.clearOffset.clicked.connect(self.clearOffsetClicked)
@@ -75,6 +78,7 @@ class DataWindow(
         self.resetSegments.clicked.connect(self.resetSegmentsPressed)
         self.forceRetrack.clicked.connect(self.forceRetrackPressed)
         self.segmentTable.itemClicked.connect(self.segmentTableClicked)
+        self.verboseLogging.stateChanged.connect(self.verboseLoggingChanged)
 
         if self.instrument.cfg.sample_interval == 0.0:
             self.displayDurationType.setCurrentText('samples')
@@ -116,6 +120,9 @@ class DataWindow(
 
     def forceRetrackPressed(self):
         self.instrument.force_retrack()
+
+    def verboseLoggingChanged(self, state):
+        self.instrument.set_verbose_logging(state)
 
     def segmentTableClicked(self, tableItem):
         if self.segmentTable.column(tableItem) == 0:
@@ -186,13 +193,18 @@ class DataWindow(
                 if il is not None:
                     self.segmentTable.item(row, 3).setText(float_to_si(il, 6) + "dB")
 
-            freq = self.lastSample.freq[0]
-            ampl = self.lastSample.ampl[0]
-            f0 = self.lastSample.f0[0]
-            bw = self.lastSample.bw[0]
-            skew = self.lastSample.skew[0]
-            pmax = 10.0**(self.lastSample.il[0]/20.0)
+            index = self.fitMode.currentIndex()
+            if self.enabledSegments[index]:
+                freq = self.lastSample.freq[index]
+                ampl = self.lastSample.ampl[index]
+                f0 = self.lastSample.f0[index]
+                bw = self.lastSample.bw[index]
+                skew = self.lastSample.skew[index]
+                pmax = 10.0**(self.lastSample.il[index]/20.0)
 
-            self.measuredPlotData.setData(freq, 20*np.log10(ampl))
-            self.fitPlotData.setData(freq, 20*np.log10(lorentz_fn(freq, f0, bw, pmax, skew)))
+                self.measuredPlotData.setData(freq, 20*np.log10(ampl))
+                self.fitPlotData.setData(freq, 20*np.log10(lorentz_fn(freq, f0, bw, pmax, skew)))
+            else:
+                self.measuredPlotData.setData([], [])
+                self.fitPlotData.setData([], [])
 

@@ -20,7 +20,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="GraphicsLayoutWidget" name="graph"/>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -174,7 +174,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="comboBox"/>
+        <widget class="QComboBox" name="fitMode"/>
        </item>
        <item>
         <widget class="GraphicsLayoutWidget" name="fitGraph">
@@ -183,6 +183,13 @@
            <horstretch>0</horstretch>
            <verstretch>1</verstretch>
           </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="verboseLogging">
+         <property name="text">
+          <string>Verbose logging</string>
          </property>
         </widget>
        </item>
