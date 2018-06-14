@@ -7,6 +7,7 @@ from scipy.stats import linregress
 import time
 import copy
 from datetime import datetime, timezone, timedelta
+import itertools
 
 class InstrumentError(RuntimeError):
     pass
@@ -387,7 +388,17 @@ class Driver(Instrument):
         return h
 
     def format_sample(self, data):
-        return data.f0 + data.q + data.il
+        items = [data.f0, data.q, data.il]
+        if self.cfg.verbose_logging:
+            for item in data.freq:
+                if item is not None:
+                    items.append(item)
+            for item in data.ampl:
+                if item is not None:
+                    items.append(item)
+        
+        result = itertools.chain(*items)
+        return result
 
     @runlater
     def set_segment_enabled(self, segment, enabled):
@@ -413,6 +424,10 @@ class Driver(Instrument):
     def force_retrack(self):
         self.forced_retrack = True
 
+    @runlater
+    def set_verbose_logging(self, enabled):
+        self.cfg.verbose_logging = enabled
+
 class VNAState(object):
     def __init__(self, config):
         self.segments = []
@@ -427,6 +442,7 @@ class VNAState(object):
         self.sample_interval = config.sample_interval
         self.bw_factor_override = None
         self.track_enabled = True
+        self.verbose_logging = False
 
     def get_bw_factor(self):
         if self.bw_factor_override is not None:

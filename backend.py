@@ -3,6 +3,7 @@ import time
 import csv
 import os
 import os.path
+import itertools
 from datetime import datetime, timedelta, timezone
 
 class InstrumentException(Exception):
@@ -82,7 +83,7 @@ class Backend(object):
                             self.remaining_samples -= 1
                             if self.log_time is None:
                                 self.log_time = s[0]
-                        self.data_logger.write(name, [s[0].timestamp(), (s[0]-self.log_time).total_seconds()] + inst.format_sample(s[1]))
+                        self.data_logger.write(name, itertools.chain([s[0].timestamp(), (s[0]-self.log_time).total_seconds()], inst.format_sample(s[1])))
                     
             if name in fns:
                 for s in samples:
