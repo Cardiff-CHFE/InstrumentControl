@@ -35,10 +35,16 @@ def main():
                 }
             }
         }))
-    backend.register_instrument("vna", vna.Driver)
-    configLoader.registerInstrument("vna", vna.Config)
-    window.registerInsturmentType("vna", vna.DataWindow, vna.ConfigWindow)
-    window.registerInstrumentIcon(vna.Config, QIcon(getResourcePath('images/networkAnalyser.png')))
+    backend.register_instrument(visaScript.Config, visaScript.Driver)
+    configLoader.registerInstrument(visaScript.Config)
+    window.registerInsturmentType(
+        "visaScript",
+        visaScript.DataWindow,
+        visaScript.ConfigWindow,
+        QIcon(getResourcePath('images/dcSupply.png')),
+        visaScript.Config({
+            'script': 'record_wait()\nlog("Record start")'
+        }))
     window.show()
 
     if(len(sys.argv) > 1):
