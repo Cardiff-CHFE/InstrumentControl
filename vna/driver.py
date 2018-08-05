@@ -1,4 +1,4 @@
-from instrument import Instrument, runlater
+from instrument import Instrument, runlater, InstrumentError
 import math
 import random
 import numpy as np
@@ -9,8 +9,7 @@ import copy
 from datetime import datetime, timezone, timedelta
 import itertools
 
-class InstrumentError(RuntimeError):
-    pass
+
 
 
 class E5071X:

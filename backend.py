@@ -87,7 +87,7 @@ class Backend(object):
                     
             if name in fns:
                 for s in samples:
-                    fns[name]((s[0]-self.start_time).total_seconds(), s[1])
+                    fns[name]((s[0]-self.start_time).total_seconds(), s[0], s[1])
 
         if self.logging and self.remaining_samples == 0:
             self.stop_logging()

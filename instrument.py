@@ -146,3 +146,6 @@ class ConfigWindow(object):
     def get_config(self):
         """Override this to return the current configuration"""
         pass
+
+class InstrumentError(RuntimeError):
+    pass
