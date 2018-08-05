@@ -15,10 +15,10 @@ class ConfigLoader():
 
         self.schema = Configuration
 
-    def registerInstrument(self, name, dtype):
+    def registerInstrument(self, dtype):
         instrument_dict = self.schema.dtypes['instruments']
         union = instrument_dict.dtype
-        union.dtypes[name] = dtype
+        union.dtypes[dtype.dtypes['type_'].default] = dtype
 
     def loadFile(self, fp):
         return self.schema(json.load(fp))

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>482</width>
-    <height>377</height>
+    <width>435</width>
+    <height>402</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -61,55 +61,72 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QListWidget" name="instrumentList">
-         <property name="toolTip">
-          <string>Double click instruments to edit them</string>
-         </property>
-         <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
-         </property>
-         <property name="viewMode">
-          <enum>QListView::IconMode</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QPushButton" name="addInstrument">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Opens a dialog to configure a new instrument</string>
-           </property>
-           <property name="text">
-            <string>Add new instrument (to be implemented)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="removeInstrument">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Remove the selected instrument</string>
-           </property>
-           <property name="text">
-            <string>Remove instrument</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-    </layout>
+    <widget class="QListWidget" name="instrumentList">
+     <property name="toolTip">
+      <string>Double click instruments to edit them</string>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="viewMode">
+      <enum>QListView::IconMode</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Add instrument</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Type:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="instrumentType"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="instrumentName"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="addInstrument">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Opens a dialog to configure a new instrument</string>
+        </property>
+        <property name="text">
+         <string>Add new instrument</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="removeInstrument">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="toolTip">
+      <string>Remove the selected instrument</string>
+     </property>
+     <property name="text">
+      <string>Remove instrument</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

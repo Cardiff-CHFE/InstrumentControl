@@ -28,14 +28,14 @@ class Backend(object):
                 if inst.type_ == 'vna':
                     break
 
-    def register_instrument(self, name, driver):
-        self.instrument_drivers[name] = driver
+    def register_instrument(self, type_, driver):
+        self.instrument_drivers[type_] = driver
 
     def start(self):
         self.data_logger = DataLogger(self.config.flush_datafiles)
 
         for name, instcfg in self.config.instruments.items():
-            driver_cls = self.instrument_drivers[instcfg.type_]
+            driver_cls = self.instrument_drivers[type(instcfg)]
             self.instruments[name] = driver_cls(instcfg)
 
         self.start_time = datetime.now(timezone.utc)
