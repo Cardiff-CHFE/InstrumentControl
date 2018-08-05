@@ -514,7 +514,7 @@ def track_window(center, span, f0, bw, center_err=0.5,
     retracks = retracks or span/(bw*bw_factor) > 1 + span_err
     return retrackf, retracks
 
-def lorentz_fn(x, f0, bw, pmax, skew):
+def lorentz_fn(x, f0, bw, pmax, skew=0.0):
     return (pmax + skew*(x-f0))/np.sqrt(1 + (4*((x-f0)/bw)**2))
 
 def lorentz_fit(freq, ampl, f0=0.5, bw=0.5, pmax=1.0, skew=0.0):
