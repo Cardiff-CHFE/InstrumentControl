@@ -134,7 +134,7 @@ class DataWindow(
             #     self.qFactorBuffer[row] = np.nan
             self.instrument.set_segment_enabled(row, checked)
 
-    def addSample(self, time, sample):
+    def addSample(self, elapsed, timestamp, sample):
         for freq, frequencyBuffer in zip(sample.f0, self.frequencyBuffers):
             if freq is not None:
                 frequencyBuffer.append(freq)
@@ -147,7 +147,7 @@ class DataWindow(
             else:
                 qFactorBuffer.append(np.nan)
 
-        self.timeBuffer.append(time)
+        self.timeBuffer.append(elapsed)
 
         self.lastSample = sample
 
