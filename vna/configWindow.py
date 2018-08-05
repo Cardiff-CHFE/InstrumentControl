@@ -39,12 +39,14 @@ class ConfigWindow(
         self.trackFrequency.stateChanged.connect(self.trackFrequencyStateChanged)
         self.trackSpan.stateChanged.connect(self.trackSpanStateChanged)
         self.vnaModel.currentIndexChanged[str].connect(self.vnaModelCurrentIndexChanged)
+        self.resourceId.textEdited.connect(self.resourceIdTextEdited)
 
         self.sampleInterval.setValue(self.config.sample_interval)
         self.bandwidthFactor.setValue(self.config.bandwidth_factor)
         self.trackFrequency.setChecked(bool(self.config.track_frequency))
         self.trackSpan.setChecked(bool(self.config.track_span))
         self.vnaModel.setCurrentText(str(self.config.model))
+        self.resourceId.setText(str(self.config.resource))
 
     def keyPressEvent(self, event):
         event.ignore()
@@ -131,6 +133,9 @@ class ConfigWindow(
 
     def vnaModelCurrentIndexChanged(self, value):
         self.config.model = value
+
+    def resourceIdTextEdited(self, value):
+        self.config.resource = value
 
     def updateSegmentWidgets(self):
         segment = self.selectedSegment
