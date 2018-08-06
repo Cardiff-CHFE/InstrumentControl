@@ -7,6 +7,7 @@ from backend import Backend
 from configLoader import ConfigLoader
 import vna
 import visaScript
+import datalogger
 
 
 def main():
@@ -44,6 +45,17 @@ def main():
         QIcon(getResourcePath('images/dcSupply.png')),
         visaScript.Config({
             'script': 'record_wait()\nlog("Record start")'
+        }))
+
+    backend.register_instrument(datalogger.Config, datalogger.Driver)
+    configLoader.registerInstrument(datalogger.Config)
+    window.registerInsturmentType(
+        "Data Logger",
+        datalogger.DataWindow,
+        datalogger.ConfigWindow,
+        QIcon(getResourcePath('images/dcSupply.png')),
+        datalogger.Config({
+            'model': '1365'
         }))
     window.show()
 
