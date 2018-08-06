@@ -57,7 +57,7 @@ class Backend(object):
             if not existing:
                 self.data_logger.write(name, ["Timestamp", "Time (s)"] + inst.get_headers())
         self.logging = True
-        self.log_time = None
+        self.log_time = datetime.now(timezone.utc)
         if self.config.record_samples > 0:
             self.remaining_samples = self.config.record_samples
         else:
@@ -81,8 +81,6 @@ class Backend(object):
                     if self.remaining_samples != 0 or name != self.config.master_instrument:
                         if name == self.config.master_instrument:
                             self.remaining_samples -= 1
-                            if self.log_time is None:
-                                self.log_time = s[0]
                         self.data_logger.write(name, itertools.chain([s[0].timestamp(), (s[0]-self.log_time).total_seconds()], inst.format_sample(s[1])))
                     
             if name in fns:
