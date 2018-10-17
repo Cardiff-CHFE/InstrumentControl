@@ -86,3 +86,9 @@ class Driver(Instrument):
     @runlater
     def eval_command(self, command):
         exec(command, globals(), self.locals_)
+
+    def stop(self):
+        """Stop the acquire loop"""
+        self.running = False
+        self.runcmd(self.check_running)
+        self.thread.join()
