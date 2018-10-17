@@ -3,3 +3,6 @@ __pycache__/
 .vscode
 Python37/
 test/
+dist/
+build/
+Thumbs.db
