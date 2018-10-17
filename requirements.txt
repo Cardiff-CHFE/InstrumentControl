@@ -1,0 +1,6 @@
+numpy
+scipy
+PyQt5
+pyvisa
+pywin32
+pyqtgraph
