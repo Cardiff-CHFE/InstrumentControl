@@ -1,0 +1,8 @@
+__pycache__/
+.venv*/
+.vscode
+Python37/
+test/
+dist/
+build/
+Thumbs.db

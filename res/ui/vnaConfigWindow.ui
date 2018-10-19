@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>vnaConfigWindow</class>
+ <widget class="QDialog" name="vnaConfigWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>688</width>
+    <height>681</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>VNA Configuration</string>
+  </property>
+  <property name="modal">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="generalTab">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Network Analyser model</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="vnaModel">
+         <item>
+          <property name="text">
+           <string>N5232A</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>E5071X</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>S2VNA</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>simulated</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Resource ID</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="resourceId"/>
+       </item>
+       <item>
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Sample interval (seconds)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="SISpinBox" name="sampleInterval"/>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="trackFrequency">
+         <property name="toolTip">
+          <string>Adjust the frequency window when the resonant frequency shifts out of range</string>
+         </property>
+         <property name="text">
+          <string>Track frequency</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="trackSpan">
+         <property name="toolTip">
+          <string>Automatically adjust the span to match the measurement bandwidth</string>
+         </property>
+         <property name="text">
+          <string>Track span</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Bandwidth factor</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="SISpinBox" name="bandwidthFactor">
+         <property name="toolTip">
+          <string>Maintain this ratio between measurement bandwidth and window span</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_3">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Use markers built into the VNA instead of curve fitting</string>
+         </property>
+         <property name="text">
+          <string>Use markers (for fast measurement)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="modesTab">
+      <attribute name="title">
+       <string>Modes</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QListWidget" name="segments"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="addSegment">
+             <property name="text">
+              <string>Add segment</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="removeSegment">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Remove segment</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Center Frequency (Hz)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="SISpinBox" name="f0">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>9999999999.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Span (Hz)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="SISpinBox" name="span">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>9999999999.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Points</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="points">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>999999</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>IF Bandwidth (Hz)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="SISpinBox" name="ifbw">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>9999999999.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Power (dBm)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="power">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="decimals">
+            <number>2</number>
+           </property>
+           <property name="minimum">
+            <double>-999.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>999.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="extrasTab">
+      <attribute name="title">
+       <string>Additional Info</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QTextEdit" name="textEdit"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okButton">
+       <property name="text">
+        <string>OK</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SISpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>uis/siSpinBox</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>okButton</sender>
+   <signal>clicked()</signal>
+   <receiver>vnaConfigWindow</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>553</x>
+     <y>696</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>402</x>
+     <y>348</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>vnaConfigWindow</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>634</x>
+     <y>696</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>402</x>
+     <y>348</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>952</width>
+    <height>739</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="GraphicsLayoutWidget" name="graph"/>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="zeroOffset">
+           <property name="text">
+            <string>Zero offset</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="clearOffset">
+           <property name="text">
+            <string>Clear offset</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="bwOverride">
+         <property name="text">
+          <string>Bandwidth factor override</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="bwFactor">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="value">
+          <double>2.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="trackEnable">
+         <property name="toolTip">
+          <string>Enable a tracking algorithm to automatically adjust the frequency and span to follow the resonant peak</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Enable automatic tracking</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="forceRetrack">
+         <property name="text">
+          <string>Force retrack</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="resetSegments">
+         <property name="toolTip">
+          <string>Reset segments to their configuration values</string>
+         </property>
+         <property name="text">
+          <string>Reset segments</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="segmentTable"/>
+       </item>
+       <item>
+        <widget class="Line" name="line_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Duration to display:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QDoubleSpinBox" name="displayDuration">
+           <property name="maximum">
+            <double>999999.989999999990687</double>
+           </property>
+           <property name="value">
+            <double>20.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="displayDurationType">
+           <item>
+            <property name="text">
+             <string>seconds</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>minutes</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>hours</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>samples</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="fitMode"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="fitGraph">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="verboseLogging">
+         <property name="text">
+          <string>Verbose logging</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicsLayoutWidget</class>
+   <extends>QGraphicsView</extends>
+   <header>pyqtgraph</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>bwOverride</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>bwFactor</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>648</x>
+     <y>47</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>648</x>
+     <y>71</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
